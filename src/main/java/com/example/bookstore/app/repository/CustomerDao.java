@@ -119,7 +119,7 @@ public class CustomerDao {
         String offset_sql = offset > 0 ? " offset " + offset : "";
         String limit_sql = limit > 0 ? " limit " + limit : "";
         String sql =  "select *, round((score_sum/1.00) / score_count,1) as score, genre.title as genre_title" +
-                " from customer_book left Join book on customer_book.book_id = book.id left join author " +
+                " from customer_book right Join book on customer_book.book_id = book.id left join author " +
                 "on book.author_id = author.id left join genre on book.genre_id = genre.id" +
                 " where customer_id = :customer_id" + offset_sql + limit_sql;
 

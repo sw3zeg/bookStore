@@ -3,6 +3,7 @@ package com.example.bookstore.app.controller;
 
 import com.example.bookstore.app.model.Review.Review_entity;
 import com.example.bookstore.app.model.Review.Review_model;
+import com.example.bookstore.app.model.Review.Review_view;
 import com.example.bookstore.app.repository.ReviewDao;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review_entity> getReviewsOfBook(
+    public List<Review_view> getReviewsOfBook(
             @PathVariable Long book_id
     ) {
         return dao.getReviewsOfBook(book_id);

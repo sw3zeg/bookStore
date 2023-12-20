@@ -1,11 +1,13 @@
 package com.example.bookstore.app.model.Review;
 
+
 import lombok.Data;
 
 @Data
-public class Review_entity {
+public class Review_view {
 
     private Long id;
     private String text;
-    private Long customer_id;
+    private String name;
+    private String mail;
 }

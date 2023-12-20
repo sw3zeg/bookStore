@@ -33,10 +33,11 @@ create table book(
 
 create table review(
                        id            bigserial       not null ,
-                       name          varchar(100)    not null ,
                        text          varchar(500)    not null ,
+                       customer_id   INT             not null ,
 
-                       primary key (id)
+                       primary key (id),
+                       foreign key (customer_id) REFERENCES customer(id) ON DELETE CASCADE
 );
 
 create table book_review(

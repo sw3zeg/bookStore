@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class Review_model {
 
-    private String name;
     private String text;
+    private Long customer_id;
 }
