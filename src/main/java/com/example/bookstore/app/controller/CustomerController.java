@@ -54,7 +54,8 @@ public class CustomerController {
             @PathVariable Long customer_id,
             @PathVariable Long book_id
     ) {
-        return dao.addBookToCustomer(customer_id, book_id);
+        //return dao.addBookToCustomer(customer_id, book_id);
+        return null;
     }
 
     @DeleteMapping("/{customer_id}/books/{book_id}")
@@ -62,7 +63,7 @@ public class CustomerController {
             @PathVariable Long customer_id,
             @PathVariable Long book_id
     ) {
-        dao.deleteBookFromCustomer(customer_id, book_id);
+        //dao.deleteBookFromCustomer(customer_id, book_id);
     }
 
     @GetMapping("/{customer_id}/books")
@@ -71,7 +72,8 @@ public class CustomerController {
             @RequestParam(required = false, defaultValue = "-1") Long offset,
             @RequestParam(required = false, defaultValue = "-1") Long limit
     ) {
-        return dao.getBooksFromCustomer(customer_id, offset, limit);
+        //return dao.getBooksFromCustomer(customer_id, offset, limit);
+        return null;
     }
 
 }
