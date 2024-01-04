@@ -1,9 +1,13 @@
 package com.example.bookstore.app.repository;
 
 
+import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.model.customer.Customer_EditDto;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
-import com.example.bookstore.app.enums.Customer_sort;
+import com.example.bookstore.app.exception.NegativeBalanceException;
+import com.example.bookstore.app.exception.NoRowsUpdatedException;
+import com.example.bookstore.app.rowmapper.CustomerEntity_RowMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,7 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 @Repository
@@ -20,21 +24,24 @@ public class CustomerDao {
 
     private final NamedParameterJdbcTemplate db;
 
+//ok
     public Long createCustomer(Customer_model customer) {
         String sql =    """
                         insert into customer (email, username, password)
-                        values(:mail, :name, :password) returning id
+                        values(:email, :username, :password)
+                        returning id
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("mail", customer.getEmail())
-                .addValue("name", customer.getUsername())
+                .addValue("email", customer.getEmail())
+                .addValue("username", customer.getUsername())
                 .addValue("password", customer.getPassword());
 
         return db.queryForObject(sql, parameterSource, Long.class);
     }
 
-    public void editCustomer(Customer_entity customer) {
+//ok
+    public void editCustomer(Customer_EditDto customer) throws NoRowsUpdatedException {
         String sql =    """
                         update customer
                         set email = :email,
@@ -49,11 +56,15 @@ public class CustomerDao {
                 .addValue("username", customer.getUsername())
                 .addValue("password", customer.getPassword());
 
-        db.update(sql, parameterSource);
+        int rowsUpdated = db.update(sql, parameterSource);
+        if (rowsUpdated == 0) {
+            throw new NoRowsUpdatedException("No customer found with ID " + customer.getId());
+        }
+
     }
 
-    //DELETE
-    public void deleteCustomer(Long customer_id) {
+//ok
+    public void deleteCustomer(Long customer_id) throws NoRowsUpdatedException {
         String sql =    """
                         delete from customer
                         where id = :id
@@ -62,11 +73,14 @@ public class CustomerDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource
                 ("id", customer_id);
 
-        db.update(sql, parameterSource);
+        int rowsUpdated = db.update(sql, parameterSource);
+        if (rowsUpdated == 0) {
+            throw new NoRowsUpdatedException("No customer found with ID " + customer_id);
+        }
     }
 
-    //GET
-    public Customer_entity getCustomerById(Long customer_id) {
+//to be deleted
+    public Optional<Customer_entity> getCustomerById(Long customer_id) {
         String sql =    """
                         select * from customer
                         where id = :id
@@ -75,16 +89,14 @@ public class CustomerDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource
                 ("id", customer_id);
 
-        return db.queryForObject(sql, parameterSource, (rs, rowNum) -> {
-            Customer_entity customer = new Customer_entity();
-            customer.setId(rs.getLong("id"));
-            customer.setEmail(rs.getString("mail"));
-            customer.setUsername(rs.getString("name"));
-            customer.setPassword(rs.getString("password"));
-            return customer;
-        });
+        try {
+            Customer_entity response = db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
+            return Optional.ofNullable(response);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
-
+//ok
     public Optional<Customer_entity> getCustomerByUsername(String username) {
         String sql =    """
                         select * from customer
@@ -95,49 +107,85 @@ public class CustomerDao {
                 ("username", username);
 
         try {
-            Customer_entity response = db.queryForObject(sql, parameterSource, (rs, rowNum) -> {
-                Customer_entity customer = new Customer_entity();
-                customer.setId(rs.getLong("id"));
-                customer.setEmail(rs.getString("email"));
-                customer.setUsername(rs.getString("username"));
-                customer.setPassword(rs.getString("password"));
-                return customer;
-            });
+            Customer_entity response = db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
             return Optional.ofNullable(response);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
 
+//ok
+    public Collection<Customer_entity> getCustomers(
+            Long offset,    //not req, dv="-1"
+            Long limit,     //not req, dv="-1"
+            String query    //not req, dv=""
+    ) {
 
-    public List<Customer_entity> getCustomers(Long offset, Long limit, Customer_sort sort_type, String query) {
+        String offset_sql = offset.toString().equals(AppConstants.OFFSET_DEFAULT_VALUE)
+                ? ""
+                : " offset :offset";
 
-        if (sort_type == null) sort_type = Customer_sort.Name_ASC;//need remove
+        String limit_sql = limit.toString().equals(AppConstants.LIMIT_DEFAULT_VALUE)
+                ? ""
+                : " limit :limit";
 
-        String sort_sql = switch (sort_type) {
-            case Email_ASC -> " order by customer.mail asc";
-            case Email_DESC -> " order by customer.mail desc";
-            case Name_ASC -> " order by customer.name asc";
-            case Name_DESC -> " order by customer.name desc";
-        };
-        String offset_sql = offset > 0 ? " offset :offset" : "";
-        String limit_sql = limit > 0 ? " limit :limit" : "";
-        String query_sql = !query.isEmpty() ? " where customer.name like '%" + ":query" + "%'" : "";
+        String query_sql = query.equals(AppConstants.QUERY_DEFAULT_VALUE)
+                ? ""
+                : " where customer.username like '%' || :query || '%'";
 
-        String sql = "select * from customer" + query_sql + sort_sql + offset_sql + limit_sql;
+        String sql = "select * from customer order by username ASC" + query_sql + offset_sql + limit_sql;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("limit",limit)
                 .addValue("offset",offset)
                 .addValue("query",query);
 
-        return db.query(sql, parameterSource, (rs, rowNum) -> {
-            Customer_entity customer = new Customer_entity();
-            customer.setId(rs.getLong("id"));
-            customer.setEmail(rs.getString("mail"));
-            customer.setUsername(rs.getString("name"));
-            customer.setPassword(rs.getString("password"));
-            return customer;
-        });
+        return db.query(sql, parameterSource, new CustomerEntity_RowMapper());
+    }
+
+    public Long addBalance(Long customerId, Long balance) {
+
+        String sql =    """
+                        update customer
+                        set balance = customer.balance + :balance
+                        where id = :id
+                        returning balance
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("id", customerId)
+                .addValue("balance", balance);
+
+        return db.queryForObject(sql, parameterSource, Long.class);
+    }
+
+    public Long indexOfCustomerByUsername(String username) {
+        String sql =    """
+                        select id from customer
+                        where username = :username
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource("username", username);
+
+        return db.queryForObject(sql, parameterSource, Long.class);
+    }
+
+    public void reduceBalance(Long customerId, Long balance) throws NegativeBalanceException {
+        String sql =    """
+                        update customer
+                        set balance = customer.balance - :balance
+                        where id = :id
+                        returning balance
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("id", customerId)
+                .addValue("balance", balance);
+
+        try {
+            db.queryForObject(sql, parameterSource, Long.class);
+        } catch (Exception e) {
+            throw new NegativeBalanceException("You have no money for this sale");
+        }
     }
 }

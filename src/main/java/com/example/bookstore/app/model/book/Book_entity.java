@@ -18,4 +18,5 @@ public class Book_entity {
     private Timestamp release;
     private Long author_id;
     private Long genre_id;
+    private Long price;
 }

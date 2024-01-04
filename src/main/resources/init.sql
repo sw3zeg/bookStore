@@ -25,7 +25,9 @@ create table book(
                      image         varchar(100)                     not null ,
                      author_id     INT                              not null ,
                      genre_id      INT                              not null ,
+                     price         INT                              NOT NULL default 0,
 
+                     CHECK ( price > 0 ),
                      primary key (id),
                      foreign key (author_id) REFERENCES author(id),
                      foreign key (genre_id) REFERENCES genre(id)
@@ -34,9 +36,11 @@ create table book(
 create table customer(
                          id          bigserial       not null ,
                          email       varchar(50)     not null ,
-                         username    varchar(50)     not null ,
+                         username    varchar(50)     not null unique ,
                          password    varchar     not null ,
+                         balance     INT        not null default 0,
 
+                         CHECK ( balance > 0 ),
                          primary key (id)
 );
 

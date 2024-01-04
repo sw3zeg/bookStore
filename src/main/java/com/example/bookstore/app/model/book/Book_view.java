@@ -17,4 +17,5 @@ public class Book_view {
     private Timestamp release;
     private String author_fio;
     private String genre_title;
+    private Long price;
 }

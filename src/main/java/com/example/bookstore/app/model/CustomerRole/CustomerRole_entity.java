@@ -1,6 +1,5 @@
 package com.example.bookstore.app.model.CustomerRole;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

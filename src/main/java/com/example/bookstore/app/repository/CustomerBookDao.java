@@ -1,14 +1,17 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.model.book.Book_view;
+import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.model.book.Book_SummaryDto;
+import com.example.bookstore.app.exception.DuplicateException;
+import com.example.bookstore.app.rowmapper.Book_SummaryDto_RowMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Collection;
 
 @Repository
 @AllArgsConstructor
@@ -17,21 +20,31 @@ public class CustomerBookDao {
     private final NamedParameterJdbcTemplate db;
 
     //POST
-    public void addBookToCustomer(Long customer_id, Long book_id) {
-        String sql = "insert into customer_book (customer_id, book_id)" +
-                " values(:customer_id, :book_id)";
+    public void addBookToCustomer(Long customer_id, Long book_id) throws DuplicateException {
+        String sql =    """
+                        insert into customer_book
+                        (customer_id, book_id)
+                        values
+                        (:customer_id, :book_id)
+                        """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("customer_id", customer_id)
                 .addValue("book_id", book_id);
 
-        db.update(sql, parameterSource);
+        try {
+            db.update(sql, parameterSource);
+        } catch (Exception e) {
+            throw new DuplicateException("You already have this book");
+        }
     }
 
     //DELETE
-    public void deleteBookFromCustomer(Long customer_id, Long book_id) {
-        String sql = "delete from customer_book" +
-                " where customer_id = :customer_id and book_id = :book_id";
+    public void deleteBookOfCustomer(Long customer_id, Long book_id) {
+        String sql =    """
+                        delete from customer_book
+                        where  customer_id = :customer_id and book_id = :book_id
+                        """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("customer_id", customer_id)
@@ -40,29 +53,38 @@ public class CustomerBookDao {
         db.update(sql, parameterSource);
     }
 
-    //GET
-    public List<Book_view> getBooksFromCustomer(Long customer_id, Long offset, Long limit) {
-        String offset_sql = offset > 0 ? " offset " + offset : "";
-        String limit_sql = limit > 0 ? " limit " + limit : "";
-        String sql =  "select *, round((score_sum/1.00) / score_count,1) as score, genre.title as genre_title" +
-                " from customer_book right Join book on customer_book.book_id = book.id left join author " +
-                "on book.author_id = author.id left join genre on book.genre_id = genre.id" +
-                " where customer_id = :customer_id" + offset_sql + limit_sql;
+//ok
+    public Collection<Book_SummaryDto> getBooksOfCustomer(String username, Long offset, Long limit) {
 
-        SqlParameterSource parameterSource = new MapSqlParameterSource("customer_id", customer_id);
+        String offset_sql = offset.toString().equals(AppConstants.OFFSET_DEFAULT_VALUE)
+                ? ""
+                : " offset :offset";
 
-        return db.query(sql, parameterSource, (rs, rowNum) -> {
-            Book_view newBook = new Book_view();
-            newBook.setId(rs.getLong("id"));
-            newBook.setTitle(rs.getString("title"));
-            newBook.setDescription(rs.getString("description"));
-            newBook.setImage(rs.getString("image"));
-            newBook.setRelease(rs.getTimestamp("release"));
-            newBook.setPages(rs.getLong("pages"));
-            newBook.setScore(rs.getDouble("score"));
-            newBook.setAuthor_fio(rs.getString("fio"));
-            newBook.setGenre_title(rs.getString("genre_title"));
-            return newBook;
-        });
+        String limit_sql = limit.toString().equals(AppConstants.LIMIT_DEFAULT_VALUE)
+                ? ""
+                : " limit :limit";
+
+
+        String sql =    """
+                        select  b.id,
+                                b.title,
+                                b.image,
+                                round((score_sum/1.00) / score_count,1) as score
+                        from customer_book cb
+                        right Join book b on cb.book_id = b.id
+                        left join author a on b.author_id = a.id
+                        left join genre g on b.genre_id = g.id
+                        left join customer c on c.id = cb.customer_id
+                        where c.username = :username
+                        """
+                        + offset_sql + limit_sql;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("username", username)
+                .addValue("offset", offset)
+                .addValue("limit", limit);
+
+        return db.query(sql, parameterSource, new Book_SummaryDto_RowMapper());
+
     }
 }

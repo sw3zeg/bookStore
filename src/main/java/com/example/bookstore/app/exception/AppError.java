@@ -1,4 +1,4 @@
-package com.example.bookstore.app.model.exception;
+package com.example.bookstore.app.exception;
 
 import lombok.Data;
 

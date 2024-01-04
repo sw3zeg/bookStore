@@ -1,7 +1,7 @@
 package com.example.bookstore.app.service;
 
 
-import com.example.bookstore.app.model.exception.AppError;
+import com.example.bookstore.app.exception.AppError;
 import com.example.bookstore.app.model.authentication.JwtRequest;
 import com.example.bookstore.app.model.authentication.JwtResponse;
 import com.example.bookstore.app.model.customer.Customer_model;

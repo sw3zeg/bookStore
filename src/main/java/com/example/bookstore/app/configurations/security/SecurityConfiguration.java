@@ -1,11 +1,10 @@
-package com.example.bookstore.app.configurations;
+package com.example.bookstore.app.configurations.security;
 
 
 import com.example.bookstore.app.filters.JwtRequestFilter;
 import com.example.bookstore.app.service.CustomerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -25,9 +23,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
 
     private final CustomerService customerService;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    public SecurityConfiguration(CustomerService customerService) {
+
+    public SecurityConfiguration(CustomerService customerService, CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
         this.customerService = customerService;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
 
@@ -41,12 +44,13 @@ public class SecurityConfiguration {
                     s.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers("/private/**").authenticated();
-                    request.requestMatchers("/admin/**").hasRole("ADMIN");
+                    request.requestMatchers("/*/private/**").authenticated();
+                    request.requestMatchers("/*/admin/**").hasRole("ADMIN");
                     request.anyRequest().permitAll();
                 })
                 .exceptionHandling(e -> {
-                    e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                    e.authenticationEntryPoint(customAuthenticationEntryPoint);
+                    e.accessDeniedHandler(customAccessDeniedHandler);
                 })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -77,5 +81,6 @@ public class SecurityConfiguration {
     public  JwtRequestFilter jwtRequestFilter() {
         return new JwtRequestFilter();
     }
+
 
 }

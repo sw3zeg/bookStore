@@ -1,6 +1,6 @@
 package com.example.bookstore.app.filters;
 
-import com.example.bookstore.app.model.exception.AppError;
+import com.example.bookstore.app.exception.AppError;
 import com.example.bookstore.app.service.JwtTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -29,8 +29,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private JwtTokenService jwtTokenService;
 
     private static final RequestMatcher PRIVATE_URLS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/private/**"),
-            new AntPathRequestMatcher("/admin/**")
+            new AntPathRequestMatcher("/*/private/**"),
+            new AntPathRequestMatcher("/*/admin/**")
     );
 
     @Override
