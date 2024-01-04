@@ -1,6 +1,8 @@
 package com.example.bookstore.app.filters;
 
+import com.example.bookstore.app.model.exception.AppError;
 import com.example.bookstore.app.service.JwtTokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -8,10 +10,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -26,8 +28,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenService jwtTokenService;
 
-    private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/public/**")
+    private static final RequestMatcher PRIVATE_URLS = new OrRequestMatcher(
+            new AntPathRequestMatcher("/private/**"),
+            new AntPathRequestMatcher("/admin/**")
     );
 
     @Override
@@ -36,9 +39,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        
-        //Если вход на частную территорию -> проверяем токен и создаем контекст
-        if (!PUBLIC_URLS.matches(request)) {
+
+        if (PRIVATE_URLS.matches(request)) {
             String authHeader = request.getHeader("Authorization");
             String username = null;
             String jwtToken = null;
@@ -49,9 +51,23 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     username = jwtTokenService.extractUsername(jwtToken);
 
                 } catch (ExpiredJwtException e) {
-                    //log.debug("Время жизни токена вышло");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write(
+                            new ObjectMapper().writeValueAsString(
+                                    new AppError(
+                                            HttpStatus.UNAUTHORIZED.value(),
+                                            "Token lifetime out"
+                                    )));
+                    return;
                 } catch (MalformedJwtException e) {
-                    //log.debug("Подпись неправильная");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write(
+                            new ObjectMapper().writeValueAsString(
+                                    new AppError(
+                                            HttpStatus.UNAUTHORIZED.value(),
+                                            "Invalid signing"
+                                    )));
+                    return;
                 }
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -64,8 +80,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(token);
                 }
 
-            } else {
-                throw new UsernameNotFoundException("Нет заголовка утентификации");
             }
         }
 

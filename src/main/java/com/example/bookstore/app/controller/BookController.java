@@ -3,13 +3,12 @@ package com.example.bookstore.app.controller;
 
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
-import com.example.bookstore.app.model.book.Book_sort;
+import com.example.bookstore.app.enums.Book_sort;
 import com.example.bookstore.app.model.book.Book_view;
 import com.example.bookstore.app.repository.BookDao;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 @RestController

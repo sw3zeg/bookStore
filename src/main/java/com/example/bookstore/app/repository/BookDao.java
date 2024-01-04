@@ -3,7 +3,7 @@ package com.example.bookstore.app.repository;
 
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
-import com.example.bookstore.app.model.book.Book_sort;
+import com.example.bookstore.app.enums.Book_sort;
 import com.example.bookstore.app.model.book.Book_view;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

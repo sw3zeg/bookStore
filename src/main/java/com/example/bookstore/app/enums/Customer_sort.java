@@ -1,4 +1,4 @@
-package com.example.bookstore.app.model.customer;
+package com.example.bookstore.app.enums;
 
 public enum Customer_sort {
     Email_ASC,

@@ -1,4 +1,4 @@
-package com.example.bookstore.app.model.book;
+package com.example.bookstore.app.enums;
 
 public enum Book_sort {
     Score_ASC,

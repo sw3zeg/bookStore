@@ -1,11 +1,10 @@
 package com.example.bookstore.app.controller;
 
 
-import com.example.bookstore.app.model.book.Book_sort;
 import com.example.bookstore.app.model.book.Book_view;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
-import com.example.bookstore.app.model.customer.Customer_sort;
+import com.example.bookstore.app.enums.Customer_sort;
 import com.example.bookstore.app.repository.CustomerDao;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;

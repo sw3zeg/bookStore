@@ -1,4 +1,4 @@
-package com.example.bookstore.app.model.auth;
+package com.example.bookstore.app.model.authentication;
 
 import lombok.Data;
 

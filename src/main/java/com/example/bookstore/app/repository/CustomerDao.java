@@ -1,15 +1,11 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.model.book.Book_sort;
-import com.example.bookstore.app.model.book.Book_view;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
-import com.example.bookstore.app.model.customer.Customer_sort;
-import com.example.bookstore.app.model.customer.Customer_view;
+import com.example.bookstore.app.enums.Customer_sort;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -89,7 +85,7 @@ public class CustomerDao {
         });
     }
 
-    public Optional<Customer_view> getCustomerByUsername(String username) {
+    public Optional<Customer_entity> getCustomerByUsername(String username) {
         String sql =    """
                         select * from customer
                         where username = :username
@@ -99,21 +95,18 @@ public class CustomerDao {
                 ("username", username);
 
         try {
-            Customer_view response = db.queryForObject(sql, parameterSource, (rs, rowNum) -> {
-                Customer_view customer = new Customer_view();
+            Customer_entity response = db.queryForObject(sql, parameterSource, (rs, rowNum) -> {
+                Customer_entity customer = new Customer_entity();
                 customer.setId(rs.getLong("id"));
                 customer.setEmail(rs.getString("email"));
                 customer.setUsername(rs.getString("username"));
                 customer.setPassword(rs.getString("password"));
                 return customer;
             });
-
             return Optional.ofNullable(response);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-
-        //return Optional.ofNullable(response);
     }
 
 
