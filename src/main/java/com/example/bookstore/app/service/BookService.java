@@ -147,7 +147,7 @@ public class BookService {
 
             customerBookRepository.addBookToCustomer(customer_id, book_id);
 
-        } catch (DuplicateException | BookNotFoundException | NegativeBalanceException e) {
+        } catch (DuplicateException | ObjectNotFoundException | NegativeBalanceException e) {
             return new ResponseEntity<>(
                     new AppError(
                             HttpStatus.BAD_REQUEST.value(),

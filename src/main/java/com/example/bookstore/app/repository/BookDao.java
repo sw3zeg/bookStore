@@ -2,12 +2,12 @@ package com.example.bookstore.app.repository;
 
 
 import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.exception.ObjectNotFoundException;
 import com.example.bookstore.app.model.book.Book_SummaryDto;
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
 import com.example.bookstore.app.enums.Book_sort;
 import com.example.bookstore.app.model.book.Book_view;
-import com.example.bookstore.app.exception.BookNotFoundException;
 import com.example.bookstore.app.exception.NoRowsUpdatedException;
 import com.example.bookstore.app.rowmapper.Book_SummaryDto_RowMapper;
 import com.example.bookstore.app.rowmapper.Book_view_RowMapper;
@@ -191,7 +191,7 @@ public class BookDao {
         return db.query(sql, parameterSource, new Book_SummaryDto_RowMapper());
     }
 
-    public Long getPriceOfBook(Long book_id) throws BookNotFoundException {
+    public Long getPriceOfBook(Long book_id) throws ObjectNotFoundException {
         String sql =    """
                         select price from book
                         where id = :id
@@ -203,7 +203,7 @@ public class BookDao {
         try {
             return db.queryForObject(sql, parameterSource, Long.class);
         }catch (EmptyResultDataAccessException e) {
-            throw new BookNotFoundException(String.format("Book with id '%s' not found", book_id));
+            throw new ObjectNotFoundException(String.format("Book with id '%s' not found", book_id));
         }
     }
 }
