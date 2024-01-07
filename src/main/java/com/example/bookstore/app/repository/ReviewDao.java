@@ -1,16 +1,20 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.model.Review.Review_entity;
+import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.exception.DuplicateException;
+import com.example.bookstore.app.exception.NoRowsUpdatedException;
+import com.example.bookstore.app.exception.TooLargeFieldException;
 import com.example.bookstore.app.model.Review.Review_model;
 import com.example.bookstore.app.model.Review.Review_view;
+import com.example.bookstore.app.rowmapper.Review_view_RowMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Collection;
 
 @Repository
 @AllArgsConstructor
@@ -19,44 +23,104 @@ public class ReviewDao {
     private final NamedParameterJdbcTemplate db;
 
 
-    public Long createReview(Long book_id, Review_model review) {
-        String createReview_sql = "insert into review (text, customer_id, book_id)" +
-                " values (:text, :customer_id, :book_id) returning id";
+    public void createReview(
+            Long customer_id,
+            Long book_id,
+            Review_model review
+    ) throws DuplicateException, NoRowsUpdatedException {
+
+        String sql =   """
+                                    insert into review
+                                    (text, mark, customer_id, book_id)
+                                    values
+                                    (:text, :mark, :customer_id, :book_id)
+                                    """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("text", review.getText())
-                .addValue("customer_id", review.getCustomer_id())
+                .addValue("mark", review.getMark())
+                .addValue("customer_id", customer_id)
                 .addValue("book_id", book_id);
 
-        return db.queryForObject(createReview_sql, parameterSource, Long.class);
+        try {
+            db.update(sql, parameterSource);
+        } catch (Exception e) {
+            var errorMessage = e.getMessage();
+            if (errorMessage.contains("ERROR: duplicate key value violates unique constraint")){
+                throw new DuplicateException("You've already written review for book with id '%s'".formatted(book_id));
+            } else if (errorMessage.contains("ERROR: insert or update on table")) {
+                throw new NoRowsUpdatedException("Book with id '%s' doesnt exists".formatted(book_id));
+            }
+        }
+    }
+
+    public void editReview(Long customer_id, Long book_id, Review_model review) throws NoRowsUpdatedException, TooLargeFieldException {
+
+        if (review.getMark() > 10 || review.getMark() < 0) {
+            throw new TooLargeFieldException("Mark not valid");
+        }
+
+        String sql =    """
+                        update review
+                        set text = :text,
+                            mark = :mark,
+                            updated = now()
+                        where customer_id = :customer_id and book_id = :book_id
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("text", review.getText())
+                .addValue("mark", review.getMark())
+                .addValue("customer_id", customer_id)
+                .addValue("book_id", book_id);
+
+        int rowsUpdated = db.update(sql, parameterSource);
+
+        if (rowsUpdated == 0) {
+            throw new NoRowsUpdatedException("Such review doesnt exists");
+        }
     }
 
 
-    public void deleteReview(Long review_id) {
-        String sql = "delete from review where id = :id";
+    public void deleteReview(Long customer_id, Long book_id) throws NoRowsUpdatedException {
+        String sql =    """
+                        delete from review
+                        where customer_id = :customer_id and book_id = :book_id
+                        """;
 
-        SqlParameterSource parameterSource = new MapSqlParameterSource("id", review_id);
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("customer_id", customer_id)
+                .addValue("book_id", book_id);
 
-        db.update(sql, parameterSource);
+        int rowsUpdated = db.update(sql, parameterSource);
+
+        if (rowsUpdated == 0) {
+            throw new NoRowsUpdatedException("Review with id '%s' doesnt exists".formatted(book_id));
+        }
     }
 
 
-    public List<Review_view> getReviewsOfBook(Long book_id, Long offset, Long limit) {
-        String offset_sql = offset > 0 ? " offset " + offset : "";
-        String limit_sql = limit > 0 ? " limit " + limit : "";
-        String sql = "select * from review left join customer on review.customer_id = customer.id" +
-                " where book_id = :book_id" + offset_sql + limit_sql;
+    public Collection<Review_view> getReviewsOfBook(Long book_id, Long offset, Long limit) {
+        String offset_sql = offset.toString().equals(AppConstants.OFFSET_DEFAULT_VALUE)
+                ? ""
+                : " offset :offset";
+        String limit_sql = limit.toString().equals(AppConstants.LIMIT_DEFAULT_VALUE)
+                ? ""
+                : " limit :limit";
 
-        SqlParameterSource parameterSource = new MapSqlParameterSource("book_id", book_id);
+        String sql =    """
+                        select * from review r
+                        left join customer c on r.customer_id = c.id
+                        where book_id = :book_id
+                        """
+                        + offset_sql + limit_sql;
 
-        return db.query(sql, parameterSource, (rs, rowNum) -> {
-            Review_view review = new Review_view();
-            review.setId(rs.getLong("id"));
-            review.setText(rs.getString("text"));
-            review.setName(rs.getString("name"));
-            review.setMail(rs.getString("mail"));
-            return review;
-        });
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("book_id", book_id)
+                .addValue("offset", offset)
+                .addValue("limit", limit);
+
+        return db.query(sql, parameterSource, new Review_view_RowMapper());
     }
 
 }

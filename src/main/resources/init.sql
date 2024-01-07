@@ -45,12 +45,15 @@ create table customer(
 );
 
 create table review(
-                       id            bigserial       not null ,
-                       text          varchar(500)    not null ,
-                       customer_id   INT             not null ,
-                       book_id       INT             not null ,
+                       text          varchar                             not null ,
+                       created       timestamp without time zone         not null     default now(),
+                       updated       timestamp without time zone         not null     default now(),
+                       mark          INT                                 not null ,
+                       customer_id   INT                                 not null ,
+                       book_id       INT                                 not null ,
 
-                       primary key (id),
+                       check ( mark >= 0 and mark <= 10 ),
+                       primary key (customer_id, book_id),
                        foreign key (customer_id) REFERENCES customer(id) ON DELETE CASCADE,
                        foreign key (book_id) REFERENCES book(id) ON DELETE CASCADE
 );
