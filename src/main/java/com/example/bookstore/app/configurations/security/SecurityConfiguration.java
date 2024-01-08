@@ -22,14 +22,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
 
     private final CustomerService customerService;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final RoleAccessDeniedHandler roleAccessDeniedHandler;
+    private final NoAuthenticationEntryPoint noAuthenticationEntryPoint;
 
 
-    public SecurityConfiguration(CustomerService customerService, CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+    public SecurityConfiguration(CustomerService customerService, RoleAccessDeniedHandler roleAccessDeniedHandler, NoAuthenticationEntryPoint noAuthenticationEntryPoint) {
         this.customerService = customerService;
-        this.customAccessDeniedHandler = customAccessDeniedHandler;
-        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.roleAccessDeniedHandler = roleAccessDeniedHandler;
+        this.noAuthenticationEntryPoint = noAuthenticationEntryPoint;
     }
 
 
@@ -48,8 +48,8 @@ public class SecurityConfiguration {
                     request.anyRequest().permitAll();
                 })
                 .exceptionHandling(e -> {
-                    e.authenticationEntryPoint(customAuthenticationEntryPoint);
-                    e.accessDeniedHandler(customAccessDeniedHandler);
+                    e.authenticationEntryPoint(noAuthenticationEntryPoint);
+                    e.accessDeniedHandler(roleAccessDeniedHandler);
                 })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
