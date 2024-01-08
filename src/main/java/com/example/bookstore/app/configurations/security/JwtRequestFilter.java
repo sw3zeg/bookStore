@@ -1,4 +1,4 @@
-package com.example.bookstore.app.filters;
+package com.example.bookstore.app.configurations.security;
 
 import com.example.bookstore.app.exception.AppError;
 import com.example.bookstore.app.service.JwtTokenService;

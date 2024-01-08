@@ -1,7 +1,6 @@
 package com.example.bookstore.app.configurations.security;
 
 
-import com.example.bookstore.app.filters.JwtRequestFilter;
 import com.example.bookstore.app.service.CustomerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

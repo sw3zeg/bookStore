@@ -1,15 +1,12 @@
 package com.example.bookstore.app.service;
 
 
-import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.constants.AppConstants;
 import com.example.bookstore.app.model.CustomerRole.CustomerRole_entity;
 import com.example.bookstore.app.model.customer.Customer_EditDto;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
 import com.example.bookstore.app.model.customer.Customer_view;
-import com.example.bookstore.app.exception.AppError;
-import com.example.bookstore.app.exception.NegativeBalanceException;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
 import com.example.bookstore.app.model.role.Role_entity;
 import com.example.bookstore.app.repository.CustomerDao;
 import com.example.bookstore.app.repository.CustomerRoleDao;
@@ -21,13 +18,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,17 +43,15 @@ public class CustomerService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Optional<Customer_entity> findByUsername(String username) {
+    public Customer_entity findCustomerByUsername(String username) {
         return customerRepository.getCustomerByUsername(username);
     }
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) {
 
-        Customer_entity customer_entity = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
-                String.format("Пользователь '%s' не найден", username)
-        ));
+        Customer_entity customer_entity = findCustomerByUsername(username);
 
         Collection<Role_entity> roles = roleService.getRolesOfCustomer(customer_entity.getId());
 
@@ -75,6 +68,7 @@ public class CustomerService implements UserDetailsService {
     public void createNewUser(Customer_model customer) {
 
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+
         Long customer_id = customerRepository.createCustomer(customer);
 
         customerRoleRepository.addRoleToCustomer(
@@ -83,52 +77,28 @@ public class CustomerService implements UserDetailsService {
 
 
 
-    public ResponseEntity<?> editCustomer(Customer_EditDto customer) {
+    public ResponseEntity<String> editCustomer(Customer_EditDto customer) {
 
-        try {
-            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-            customerRepository.editCustomer(customer);
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        customerRepository.editCustomer(customer);
 
-            return new ResponseEntity<>(
-                    "Customer was changes successful",
-                    HttpStatus.OK
-            );
-        } catch (NoRowsUpdatedException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        return new ResponseEntity<>(
+                "Customer was changes successful",
+                HttpStatus.OK
+        );
     }
 
-    public ResponseEntity<?> deleteCustomer(Long customer_id) {
+    public ResponseEntity<String> deleteCustomer(Long customer_id) {
 
-        try {
-            customerRepository.deleteCustomer(customer_id);
+        customerRepository.deleteCustomer(customer_id);
 
-            return new ResponseEntity<>(
-                    "Customer was deleted successful",
-                    HttpStatus.OK
-            );
-        } catch (NoRowsUpdatedException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        return new ResponseEntity<>(
+                "Customer was deleted successful",
+                HttpStatus.OK
+        );
     }
 
-    public ResponseEntity<Collection<Customer_entity>> getCustomers(
-            Long offset,
-            Long limit,
-            String query
-    ) {
+    public ResponseEntity<Collection<Customer_entity>> getCustomers(Long offset, Long limit, String query) {
 
         return new ResponseEntity<>(
                 customerRepository.getCustomers(offset, limit, query),
@@ -136,7 +106,7 @@ public class CustomerService implements UserDetailsService {
         );
     }
 
-    public ResponseEntity<?> addBalance(Long customerId, Long balance) {
+    public ResponseEntity<String> addBalance(Long customerId, Long balance) {
 
         Long newBalance = customerRepository.addBalance(customerId, balance);
 
@@ -146,7 +116,7 @@ public class CustomerService implements UserDetailsService {
         );
     }
 
-    public void reduceBalance(Long customerId, Long balance) throws NegativeBalanceException {
+    public void reduceBalance(Long customerId, Long balance) {
         customerRepository.reduceBalance(customerId, balance);
     }
 

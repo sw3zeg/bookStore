@@ -1,11 +1,12 @@
 package com.example.bookstore.app.controller;
 
 
-import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.constants.AppConstants;
 import com.example.bookstore.app.enums.Book_sort;
 import com.example.bookstore.app.model.book.Book_SummaryDto;
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
+import com.example.bookstore.app.model.book.Book_view;
 import com.example.bookstore.app.service.BookService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,31 +22,26 @@ public class BookController {
     private final BookService bookService;
 
 
-//ok
     @GetMapping("/books/{book_id}")
-    public ResponseEntity<?> getBookById(@PathVariable Long book_id) {
+    public ResponseEntity<Book_view> getBookById(@PathVariable Long book_id) {
         return bookService.getBookById(book_id);
     }
 
-//ok
     @DeleteMapping("/admin/books/{book_id}")
-    public ResponseEntity<?> deleteBook(@PathVariable Long book_id) {
+    public ResponseEntity<String> deleteBook(@PathVariable Long book_id) {
         return bookService.deleteBook(book_id);
     }
 
-//ok
     @PutMapping("/admin/books")
-    public ResponseEntity<?> editBook(@RequestBody Book_entity book) {
+    public ResponseEntity<String> editBook(@RequestBody Book_entity book) {
         return bookService.editBook(book);
     }
 
-//ok
     @PostMapping("/admin/books")
-    public ResponseEntity<?> createBook(@RequestBody Book_model book) {
+    public ResponseEntity<Long> createBook(@RequestBody Book_model book) {
         return bookService.createBook(book);
     }
 
-//ok
     @GetMapping("/private/books")
     public ResponseEntity<Collection<Book_SummaryDto>> getBooksOfCustomer(
             Principal principal,
@@ -55,7 +51,6 @@ public class BookController {
         return bookService.getBooksOfCustomer(principal, offset, limit);
     }
 
-//ok
     @GetMapping("/books")
     public ResponseEntity<Collection<Book_SummaryDto>> getBooks(
             @RequestParam(required = false, defaultValue = AppConstants.OFFSET_DEFAULT_VALUE) Long offset,
@@ -66,9 +61,8 @@ public class BookController {
         return bookService.getBooks(offset,limit,query,sort);
     }
 
-//ok
     @PostMapping("/private/buyBook/{book_id}")
-    public ResponseEntity<?> buyBook(
+    public ResponseEntity<String> buyBook(
             Principal principal,
             @PathVariable Long book_id
 

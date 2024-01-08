@@ -1,9 +1,9 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.constants.AppConstants;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.book.Book_SummaryDto;
-import com.example.bookstore.app.exception.DuplicateException;
 import com.example.bookstore.app.rowmapper.Book_SummaryDto_RowMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -20,7 +20,7 @@ public class CustomerBookDao {
     private final NamedParameterJdbcTemplate db;
 
     //POST
-    public void addBookToCustomer(Long customer_id, Long book_id) throws DuplicateException {
+    public void addBookToCustomer(Long customer_id, Long book_id) {
         String sql =    """
                         insert into customer_book
                         (customer_id, book_id)
@@ -35,7 +35,7 @@ public class CustomerBookDao {
         try {
             db.update(sql, parameterSource);
         } catch (Exception e) {
-            throw new DuplicateException("You already have this book");
+            throw new BadRequestException("You already have this book");
         }
     }
 

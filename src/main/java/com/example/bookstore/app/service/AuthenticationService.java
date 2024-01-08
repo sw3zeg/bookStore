@@ -1,7 +1,7 @@
 package com.example.bookstore.app.service;
 
 
-import com.example.bookstore.app.exception.AppError;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.authentication.JwtRequest;
 import com.example.bookstore.app.model.authentication.JwtResponse;
 import com.example.bookstore.app.model.customer.Customer_model;
@@ -23,49 +23,41 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomerService customerService;
 
-    public ResponseEntity<?> authenticate(JwtRequest authRequest) throws BadCredentialsException {
+
+    public ResponseEntity<JwtResponse> authenticate(JwtRequest authRequest) {
+
+        Authentication authentication;
+
         try {
-            Authentication authentication = authenticationManager.authenticate(
+            authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authRequest.getUsername(),
-                            authRequest.getPassword()
-                    ));
-
-            UserDetails userDetails = customerService.loadUserByUsername(authRequest.getUsername());
-            String token =  jwtTokenService.generateToken(userDetails);
-
-            return new ResponseEntity<>(
-                    new JwtResponse(token),
-                    HttpStatus.OK
+                            authRequest.getUsername(), authRequest.getPassword()
+                    )
             );
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            "Invalid login or password"
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
+            throw new BadRequestException("Invalid password");
         }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        String jwtToken = jwtTokenService.generateToken(userDetails);
+
+        return new ResponseEntity<>(
+                new JwtResponse(jwtToken),
+                HttpStatus.OK
+        );
     }
 
 
-    public ResponseEntity<?> createNewUser(Customer_model customer) {
-        if (customerService.findByUsername(customer.getUsername()).isPresent()) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            "Customer with such username already exists"
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+    public ResponseEntity<JwtResponse> createNewUser(Customer_model customer) {
 
         customerService.createNewUser(customer);
 
         UserDetails userDetails = customerService.loadUserByUsername(customer.getUsername());
+        String jwtToken = jwtTokenService.generateToken(userDetails);
+
         return new ResponseEntity<>(
-                new JwtResponse (jwtTokenService.generateToken(userDetails)),
+                new JwtResponse(jwtToken),
                 HttpStatus.OK
         );
     }

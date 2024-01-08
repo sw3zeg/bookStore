@@ -1,14 +1,13 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.enums.AppConstants;
-import com.example.bookstore.app.exception.ObjectNotFoundException;
+import com.example.bookstore.app.constants.AppConstants;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.book.Book_SummaryDto;
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
 import com.example.bookstore.app.enums.Book_sort;
 import com.example.bookstore.app.model.book.Book_view;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
 import com.example.bookstore.app.rowmapper.Book_SummaryDto_RowMapper;
 import com.example.bookstore.app.rowmapper.Book_view_RowMapper;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
@@ -87,12 +85,12 @@ public class BookDao {
         int rowsUpdated = db.update(sql, parameterSource);
 
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("No book found with title " + book.getTitle());
+            throw new BadRequestException("No book found with title " + book.getTitle());
         }
     }
 
 
-    public void deleteBook(Long book_id) throws NoRowsUpdatedException {
+    public void deleteBook(Long book_id) {
         String sql =    """
                         delete from book
                         where id = :id
@@ -104,12 +102,12 @@ public class BookDao {
         int rowsUpdated = db.update(sql, parameterSource);
 
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("No book found with id " + book_id);
+            throw new BadRequestException("No book found with id " + book_id);
         }
     }
 
 
-    public Optional<Book_view> getBookById(Long book_id) {
+    public Book_view getBookById(Long book_id) {
         String sql =    """
                         select  *,
                                 round((score_sum/1.00) / score_count,1) as score,
@@ -123,14 +121,13 @@ public class BookDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource("id", book_id);
 
         try {
-            Book_view response = db.queryForObject(sql, parameterSource, new Book_view_RowMapper());
-            return Optional.ofNullable(response);
+            return db.queryForObject(sql, parameterSource, new Book_view_RowMapper());
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            throw new BadRequestException("Book with id '%s' not found".formatted(book_id));
         }
     }
 
-    public Optional<Book_view> getBookByTitle(String title) {
+    public Book_view getBookByTitle(String title) {
         String sql =    """
                         select  *,
                                 round((score_sum/1.00) / score_count,1) as score,
@@ -144,10 +141,9 @@ public class BookDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource("title", title);
 
         try {
-            Book_view response =  db.queryForObject(sql, parameterSource, new Book_view_RowMapper());
-            return Optional.ofNullable(response);
+            return db.queryForObject(sql, parameterSource, new Book_view_RowMapper());
         } catch (Exception e) {
-            return Optional.empty();
+            throw new BadRequestException("Book with such title already exists");
         }
     }
 
@@ -191,7 +187,7 @@ public class BookDao {
         return db.query(sql, parameterSource, new Book_SummaryDto_RowMapper());
     }
 
-    public Long getPriceOfBook(Long book_id) throws ObjectNotFoundException {
+    public Long getPriceOfBook(Long book_id) {
         String sql =    """
                         select price from book
                         where id = :id
@@ -203,7 +199,7 @@ public class BookDao {
         try {
             return db.queryForObject(sql, parameterSource, Long.class);
         }catch (EmptyResultDataAccessException e) {
-            throw new ObjectNotFoundException(String.format("Book with id '%s' not found", book_id));
+            throw new BadRequestException(String.format("Book with id '%s' not found", book_id));
         }
     }
 }

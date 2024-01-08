@@ -27,11 +27,7 @@ public class BookService {
     private CustomerBookDao customerBookRepository;
     private CustomerService customerService;
 
-    public ResponseEntity<Collection<Book_SummaryDto>> getBooksOfCustomer(
-            Principal principal,
-            Long offset,
-            Long limit
-    ) {
+    public ResponseEntity<Collection<Book_SummaryDto>> getBooksOfCustomer(Principal principal, Long offset, Long limit) {
 
         String username = principal.getName();
 
@@ -42,12 +38,7 @@ public class BookService {
     }
 
 
-    public ResponseEntity<Collection<Book_SummaryDto>> getBooks(
-            Long offset,
-            Long limit,
-            String query,
-            Book_sort sort
-    ) {
+    public ResponseEntity<Collection<Book_SummaryDto>> getBooks(Long offset, Long limit, String query, Book_sort sort) {
 
         if (sort == null) sort = Book_sort.Release_ASC;
 
@@ -57,17 +48,7 @@ public class BookService {
         );
     }
 
-    public ResponseEntity<?> createBook(Book_model book) {
-
-        if (bookRepository.getBookByTitle(book.getTitle()).isPresent()) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            "Book with such title already exists"
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+    public ResponseEntity<Long> createBook(Book_model book) {
 
         return new ResponseEntity<>(
                 bookRepository.createBook(book),
@@ -75,87 +56,44 @@ public class BookService {
         );
     }
 
-    public ResponseEntity<?> editBook(Book_entity book) {
+    public ResponseEntity<String> editBook(Book_entity book) {
 
-        try {
-            bookRepository.editBook(book);
-            return new ResponseEntity<>(
-                    "Book '%s' was created".formatted(book.getTitle()),
-                    HttpStatus.OK
-            );
-        } catch (NoRowsUpdatedException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-    }
-
-    public ResponseEntity<?> deleteBook(Long book_id) {
-
-        try{
-            bookRepository.deleteBook(book_id);
-            return new ResponseEntity<>(
-                    "Book '%s' was deleted".formatted(book_id),
-                    HttpStatus.BAD_REQUEST
-            );
-        } catch (NoRowsUpdatedException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-    }
-
-    public ResponseEntity<?> getBookById(Long book_id) {
-
-        Optional<Book_view> book = bookRepository.getBookById(book_id);
-        if (book.isPresent()) {
-            return new ResponseEntity<>(
-                    book.get(),
-                    HttpStatus.OK
-            );
-        }
-
+        bookRepository.editBook(book);
         return new ResponseEntity<>(
-                new AppError(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "Book with id '%s' not found".formatted(book_id)
-                ),
+                "Book '%s' was created".formatted(book.getTitle()),
+                HttpStatus.OK
+        );
+    }
+
+    public ResponseEntity<String> deleteBook(Long book_id) {
+
+        bookRepository.deleteBook(book_id);
+        return new ResponseEntity<>(
+                "Book '%s' was deleted".formatted(book_id),
                 HttpStatus.BAD_REQUEST
         );
     }
 
+    public ResponseEntity<Book_view> getBookById(Long book_id) {
+
+        return new ResponseEntity<>(
+                bookRepository.getBookById(book_id),
+                HttpStatus.OK
+        );
+    }
+
     @Transactional
-    public ResponseEntity<?> buyBook(Principal principal, Long book_id) {
+    public ResponseEntity<String> buyBook(Principal principal, Long book_id) {
 
         String username = principal.getName();
 
-        try {
+        Long customer_id = customerService.indexOfCustomerByName(username);
 
-            Long customer_id = customerService.indexOfCustomerByName(username);
+        Long price = bookRepository.getPriceOfBook(book_id);
 
-            Long price = bookRepository.getPriceOfBook(book_id);
+        customerService.reduceBalance(customer_id, price);
 
-            customerService.reduceBalance(customer_id, price);
-
-            customerBookRepository.addBookToCustomer(customer_id, book_id);
-
-        } catch (DuplicateException | ObjectNotFoundException | NegativeBalanceException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        customerBookRepository.addBookToCustomer(customer_id, book_id);
 
         return new ResponseEntity<>(
                 String.format("Book with id '%s' was added to library to customer with username '%s'",book_id, username),

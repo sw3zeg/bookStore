@@ -1,4 +1,4 @@
-package com.example.bookstore.app.enums;
+package com.example.bookstore.app.constants;
 
 
 public class AppConstants {

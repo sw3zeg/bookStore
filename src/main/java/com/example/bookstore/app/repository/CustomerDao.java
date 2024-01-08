@@ -1,12 +1,11 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.constants.AppConstants;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.customer.Customer_EditDto;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
-import com.example.bookstore.app.exception.NegativeBalanceException;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
 import com.example.bookstore.app.rowmapper.CustomerEntity_RowMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -37,11 +36,15 @@ public class CustomerDao {
                 .addValue("username", customer.getUsername())
                 .addValue("password", customer.getPassword());
 
-        return db.queryForObject(sql, parameterSource, Long.class);
+        try {
+            return db.queryForObject(sql, parameterSource, Long.class);
+        } catch (Exception e) {
+            throw new BadRequestException("Customer with username '%s' already exists".formatted(customer.getUsername()));
+        }
     }
 
 //ok
-    public void editCustomer(Customer_EditDto customer) throws NoRowsUpdatedException {
+    public void editCustomer(Customer_EditDto customer) {
         String sql =    """
                         update customer
                         set email = :email,
@@ -58,13 +61,13 @@ public class CustomerDao {
 
         int rowsUpdated = db.update(sql, parameterSource);
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("No customer found with ID " + customer.getId());
+            throw new BadRequestException("No customer found with ID " + customer.getId());
         }
 
     }
 
 //ok
-    public void deleteCustomer(Long customer_id) throws NoRowsUpdatedException {
+    public void deleteCustomer(Long customer_id) {
         String sql =    """
                         delete from customer
                         where id = :id
@@ -75,7 +78,7 @@ public class CustomerDao {
 
         int rowsUpdated = db.update(sql, parameterSource);
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("No customer found with ID " + customer_id);
+            throw new BadRequestException("No customer found with ID " + customer_id);
         }
     }
 
@@ -97,7 +100,7 @@ public class CustomerDao {
         }
     }
 //ok
-    public Optional<Customer_entity> getCustomerByUsername(String username) {
+    public Customer_entity getCustomerByUsername(String username) {
         String sql =    """
                         select * from customer
                         where username = :username
@@ -107,19 +110,14 @@ public class CustomerDao {
                 ("username", username);
 
         try {
-            Customer_entity response = db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
-            return Optional.ofNullable(response);
+            return db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            throw new BadRequestException("Customer with username '%s' doesnt exists".formatted(username));
         }
     }
 
 //ok
-    public Collection<Customer_entity> getCustomers(
-            Long offset,    //not req, dv="-1"
-            Long limit,     //not req, dv="-1"
-            String query    //not req, dv=""
-    ) {
+    public Collection<Customer_entity> getCustomers(Long offset, Long limit, String query) {
 
         String offset_sql = offset.toString().equals(AppConstants.OFFSET_DEFAULT_VALUE)
                 ? ""
@@ -170,7 +168,7 @@ public class CustomerDao {
         return db.queryForObject(sql, parameterSource, Long.class);
     }
 
-    public void reduceBalance(Long customerId, Long balance) throws NegativeBalanceException {
+    public void reduceBalance(Long customerId, Long balance) {
         String sql =    """
                         update customer
                         set balance = customer.balance - :balance
@@ -185,7 +183,7 @@ public class CustomerDao {
         try {
             db.queryForObject(sql, parameterSource, Long.class);
         } catch (Exception e) {
-            throw new NegativeBalanceException("You have no money for this sale");
+            throw new BadRequestException("You have no money for this sale");
         }
     }
 }

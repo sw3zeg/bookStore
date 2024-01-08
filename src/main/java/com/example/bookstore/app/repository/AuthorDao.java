@@ -1,23 +1,18 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.enums.AppConstants;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
-import com.example.bookstore.app.exception.ObjectNotFoundException;
-import com.example.bookstore.app.exception.TooLargeFieldException;
+import com.example.bookstore.app.constants.AppConstants;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.author.Author_entity;
 import com.example.bookstore.app.model.author.Author_model;
 import com.example.bookstore.app.rowmapper.Author_entity_RowMapper;
 import lombok.AllArgsConstructor;
-import org.postgresql.util.PSQLException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.List;
 
 @Repository
 @AllArgsConstructor
@@ -25,8 +20,7 @@ public class AuthorDao {
 
     private final NamedParameterJdbcTemplate db;
 
-//ok
-    public Long createAuthor(Author_model authorModel) throws TooLargeFieldException {
+    public Long createAuthor(Author_model authorModel) {
         String sql =    """
                         insert into author
                         (fio, biography, photo)
@@ -43,12 +37,11 @@ public class AuthorDao {
         try {
             return db.queryForObject(sql, parameterSource, Long.class);
         } catch (Exception e) {
-            throw new TooLargeFieldException("Some field too large");
+            throw new BadRequestException("Some field too large");
         }
     }
 
-//ok
-    public void editAuthor(Author_entity authorEntity) throws TooLargeFieldException {
+    public void editAuthor(Author_entity authorEntity) {
         String sql =    """
                         update author
                         set fio = :fio,
@@ -66,12 +59,11 @@ public class AuthorDao {
         try {
             db.update(sql, parameterSource);
         } catch (Exception e) {
-            throw new TooLargeFieldException("Some field too large");
+            throw new BadRequestException("Some field too large");
         }
     }
 
-    //DELETE
-    public void deleteAuthor(Long author_id) throws NoRowsUpdatedException {
+    public void deleteAuthor(Long author_id) {
         String sql =    """
                         delete from author
                         where id = :id
@@ -82,12 +74,11 @@ public class AuthorDao {
 
         int rowsUpdated = db.update(sql, parameterSource);
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("No author found with ID " + author_id);
+            throw new BadRequestException("No author found with ID " + author_id);
         }
     }
 
-    //GET
-    public Author_entity getAuthorById(Long author_id) throws ObjectNotFoundException {
+    public Author_entity getAuthorById(Long author_id) {
         String sql =    """
                         select * from author
                         where id = :id
@@ -99,7 +90,7 @@ public class AuthorDao {
         try {
             return db.queryForObject(sql, parameterSource, new Author_entity_RowMapper());
         } catch (Exception e) {
-            throw new ObjectNotFoundException("No author with id '%s'".formatted(author_id));
+            throw new BadRequestException("No author with id '%s'".formatted(author_id));
         }
     }
 

@@ -23,26 +23,6 @@ public class JwtTokenService {
     @Value("${jwt.lifetime}")
     private Duration jwtLifetime;
 
-
-    //???
-//    public boolean validateToken(String token, UserDetails userDetails) {
-//        try {
-//            final String username = extractUsername(token);
-//            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-//        } catch (SignatureException ex) {
-//            System.out.println("Invalid JWT signature");
-//        } catch (MalformedJwtException ex) {
-//            System.out.println("Invalid JWT token");
-//        } catch (ExpiredJwtException ex) {
-//            System.out.println("Expired JWT token");
-//        } catch (UnsupportedJwtException ex) {
-//            System.out.println("Unsupported JWT token");
-//        } catch (IllegalArgumentException ex) {
-//            System.out.println("JWT claims string is empty.");
-//        }
-//        return false;
-//    }
-
     public String extractUsername(String token) {
         return extractClaimFromToken(token, Claims::getSubject);
     }

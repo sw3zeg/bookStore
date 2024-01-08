@@ -2,8 +2,6 @@ package com.example.bookstore.app.service;
 
 
 import com.example.bookstore.app.exception.AppError;
-import com.example.bookstore.app.exception.DuplicateException;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
 import com.example.bookstore.app.model.genre.Genre_entity;
 import com.example.bookstore.app.model.genre.Genre_model;
 import com.example.bookstore.app.repository.GenreDao;
@@ -20,43 +18,22 @@ public class GenreService {
 
     private final GenreDao genreRepository;
 
-    public ResponseEntity<?> createGenre(Genre_model genreEntity) {
+    public ResponseEntity<Long> createGenre(Genre_model genreEntity) {
 
-        try {
-            return new ResponseEntity<>(
-                    genreRepository.createGenre(genreEntity),
-                    HttpStatus.OK
-            );
-        } catch (DuplicateException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        return new ResponseEntity<>(
+                genreRepository.createGenre(genreEntity),
+                HttpStatus.OK
+        );
     }
 
 
-    public ResponseEntity<?> deleteGenre(Long genreId) {
+    public ResponseEntity<String> deleteGenre(Long genreId) {
 
-        try {
-            genreRepository.deleteGenre(genreId);
-            return new ResponseEntity<>(
-                    "Genre with id '%s' was deleted".formatted(genreId),
-                    HttpStatus.OK
-            );
-        } catch (NoRowsUpdatedException e) {
-            return new ResponseEntity<>(
-                    new AppError(
-                            HttpStatus.BAD_REQUEST.value(),
-                            e.getMessage()
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-
+        genreRepository.deleteGenre(genreId);
+        return new ResponseEntity<>(
+                "Genre with id '%s' was deleted".formatted(genreId),
+                HttpStatus.OK
+        );
     }
 
     public ResponseEntity<Collection<Genre_entity>> getGenres(Long offset, Long limit) {

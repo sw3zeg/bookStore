@@ -1,17 +1,15 @@
 package com.example.bookstore.app.controller;
 
 
-import com.example.bookstore.app.enums.AppConstants;
+import com.example.bookstore.app.constants.AppConstants;
 import com.example.bookstore.app.model.Review.Review_model;
 import com.example.bookstore.app.model.Review.Review_view;
 import com.example.bookstore.app.service.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -20,7 +18,6 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-//ok
     @PostMapping("/private/books/{book_id}/reviews")
     public ResponseEntity<?> createReview(
             Principal principal,
@@ -30,9 +27,8 @@ public class ReviewController {
         return reviewService.createReview(principal, book_id, review);
     }
 
-//ok
     @PutMapping("/private/books/{book_id}/reviews")
-    public ResponseEntity<?> editReview(
+    public ResponseEntity<String> editReview(
             Principal principal,
             @PathVariable Long book_id,
             @RequestBody Review_model review
@@ -40,18 +36,16 @@ public class ReviewController {
         return reviewService.editReview(principal, book_id, review);
     }
 
-//ok
     @DeleteMapping("/private/books/{book_id}/reviews/")
-    public ResponseEntity<?> deleteReview(
+    public ResponseEntity<String> deleteReview(
             Principal principal,
             @PathVariable Long book_id
     ) {
         return reviewService.deleteReview(principal, book_id);
     }
 
-//ok
     @DeleteMapping("/admin/books/{book_id}/reviews/{customer_id}")
-    public ResponseEntity<?> deleteReview_admin(
+    public ResponseEntity<String> deleteReview_admin(
             @PathVariable Long book_id,
             @PathVariable Long customer_id
 
@@ -59,7 +53,6 @@ public class ReviewController {
         return reviewService.deleteReview(customer_id, book_id);
     }
 
-//ok
     @GetMapping("/books/{book_id}/reviews")
     public ResponseEntity<Collection<Review_view>> getReviewsOfBook(
             @PathVariable Long book_id,
@@ -68,11 +61,4 @@ public class ReviewController {
     ) {
         return reviewService.getReviewsOfBook(book_id, offset, limit);
     }
-
-
-
-
-
-
-
 }

@@ -1,10 +1,8 @@
 package com.example.bookstore.app.repository;
 
 
-import com.example.bookstore.app.enums.AppConstants;
-import com.example.bookstore.app.exception.DuplicateException;
-import com.example.bookstore.app.exception.NoRowsUpdatedException;
-import com.example.bookstore.app.exception.TooLargeFieldException;
+import com.example.bookstore.app.constants.AppConstants;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.Review.Review_model;
 import com.example.bookstore.app.model.Review.Review_view;
 import com.example.bookstore.app.rowmapper.Review_view_RowMapper;
@@ -23,11 +21,7 @@ public class ReviewDao {
     private final NamedParameterJdbcTemplate db;
 
 
-    public void createReview(
-            Long customer_id,
-            Long book_id,
-            Review_model review
-    ) throws DuplicateException, NoRowsUpdatedException {
+    public void createReview(Long customer_id, Long book_id, Review_model review) {
 
         String sql =   """
                                     insert into review
@@ -47,17 +41,17 @@ public class ReviewDao {
         } catch (Exception e) {
             var errorMessage = e.getMessage();
             if (errorMessage.contains("ERROR: duplicate key value violates unique constraint")){
-                throw new DuplicateException("You've already written review for book with id '%s'".formatted(book_id));
+                throw new BadRequestException("You've already written review for book with id '%s'".formatted(book_id));
             } else if (errorMessage.contains("ERROR: insert or update on table")) {
-                throw new NoRowsUpdatedException("Book with id '%s' doesnt exists".formatted(book_id));
+                throw new BadRequestException("Book with id '%s' doesnt exists".formatted(book_id));
             }
         }
     }
 
-    public void editReview(Long customer_id, Long book_id, Review_model review) throws NoRowsUpdatedException, TooLargeFieldException {
+    public void editReview(Long customer_id, Long book_id, Review_model review) {
 
         if (review.getMark() > 10 || review.getMark() < 0) {
-            throw new TooLargeFieldException("Mark not valid");
+            throw new BadRequestException("Mark not valid");
         }
 
         String sql =    """
@@ -77,12 +71,12 @@ public class ReviewDao {
         int rowsUpdated = db.update(sql, parameterSource);
 
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("Such review doesnt exists");
+            throw new BadRequestException("Such review doesnt exists");
         }
     }
 
 
-    public void deleteReview(Long customer_id, Long book_id) throws NoRowsUpdatedException {
+    public void deleteReview(Long customer_id, Long book_id) {
         String sql =    """
                         delete from review
                         where customer_id = :customer_id and book_id = :book_id
@@ -95,7 +89,7 @@ public class ReviewDao {
         int rowsUpdated = db.update(sql, parameterSource);
 
         if (rowsUpdated == 0) {
-            throw new NoRowsUpdatedException("Review with id '%s' doesnt exists".formatted(book_id));
+            throw new BadRequestException("Review with id '%s' doesnt exists".formatted(book_id));
         }
     }
 
