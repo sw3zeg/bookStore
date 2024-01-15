@@ -23,8 +23,7 @@ public class ReviewService {
     public ResponseEntity<String> createReview(Principal principal, Long book_id, Review_model review) {
 
         String username = principal.getName();
-        Long customer_id = customerService.indexOfCustomerByName(username);
-        reviewRepository.createReview(customer_id, book_id, review);
+        reviewRepository.createReview(username, book_id, review);
 
         return new ResponseEntity<>(
                 "Review for book with id '%s' has been written".formatted(book_id),
@@ -35,8 +34,8 @@ public class ReviewService {
     public ResponseEntity<String> editReview(Principal principal, Long book_id, Review_model review) {
 
         String username = principal.getName();
-        Long customer_id = customerService.indexOfCustomerByName(username);
-        reviewRepository.editReview(customer_id, book_id, review );
+
+        reviewRepository.editReview(username, book_id, review );
 
         return new ResponseEntity<>(
                 "Review for book with id '%s' has been updated".formatted(book_id),
@@ -47,8 +46,8 @@ public class ReviewService {
     public ResponseEntity<String> deleteReview(Principal principal, Long book_id) {
 
         String username = principal.getName();
-        Long customer_id = customerService.indexOfCustomerByName(username);
-        reviewRepository.deleteReview(customer_id, book_id);
+
+        reviewRepository.deleteReview(username, book_id);
 
         return new ResponseEntity<>(
                 "Review for book with id '%s' has been deleted".formatted(book_id),
@@ -56,9 +55,9 @@ public class ReviewService {
         );
     }
 
-    public ResponseEntity<String> deleteReview(Long customer_id, Long book_id) {
+    public ResponseEntity<String> deleteReview(String username, Long book_id) {
 
-        reviewRepository.deleteReview(customer_id, book_id);
+        reviewRepository.deleteReview(username, book_id);
 
         return new ResponseEntity<>(
                 "Review for book with id '%s' has been deleted".formatted(book_id),

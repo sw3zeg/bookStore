@@ -1,7 +1,6 @@
 package com.example.bookstore.app.rowmapper;
 
 import com.example.bookstore.app.model.book.Book_SummaryDto;
-import com.example.bookstore.app.model.book.Book_view;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

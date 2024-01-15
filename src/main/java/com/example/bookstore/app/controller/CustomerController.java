@@ -2,8 +2,8 @@ package com.example.bookstore.app.controller;
 
 
 import com.example.bookstore.app.constants.AppConstants;
-import com.example.bookstore.app.model.customer.Customer_EditDto;
 import com.example.bookstore.app.model.customer.Customer_entity;
+import com.example.bookstore.app.model.customer.Customer_model;
 import com.example.bookstore.app.service.CustomerService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +20,13 @@ public class CustomerController {
 
 
     @PutMapping("/admin/customers")
-    public ResponseEntity<String> editCustomer(@RequestBody Customer_EditDto customer) {
+    public ResponseEntity<String> editCustomer(@RequestBody Customer_model customer) {
         return customerService.editCustomer(customer);
     }
 
-    @DeleteMapping("/admin/customers/{customer_id}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable Long customer_id) {
-        return customerService.deleteCustomer(customer_id);
+    @DeleteMapping("/admin/customers/{username}")
+    public ResponseEntity<String> deleteCustomer(@PathVariable String username) {
+        return customerService.deleteCustomer(username);
     }
 
     @GetMapping("/admin/customers")
@@ -38,12 +38,12 @@ public class CustomerController {
         return customerService.getCustomers(offset, limit, query);
     }
 
-    @PostMapping("/admin/customers/{customer_id}/addBalance/{balance}")
+    @PostMapping("/admin/customers/{username}/addBalance/{balance}")
     public ResponseEntity<String> addBalance(
-            @PathVariable Long customer_id,
+            @PathVariable String username,
             @PathVariable Long balance
     ) {
-        return customerService.addBalance(customer_id, balance);
+        return customerService.addBalance(username, balance);
     }
 
 }

@@ -2,13 +2,10 @@ package com.example.bookstore.app.repository;
 
 
 import com.example.bookstore.app.constants.AppConstants;
-import com.example.bookstore.app.exception.BadRequestException;
-import com.example.bookstore.app.model.customer.Customer_EditDto;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
 import com.example.bookstore.app.rowmapper.CustomerEntity_RowMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -23,12 +20,24 @@ public class CustomerDao {
 
     private final NamedParameterJdbcTemplate db;
 
-//ok
-    public Long createCustomer(Customer_model customer) {
+
+    public Boolean isCustomerExists(String username) {
+        String sql =    """
+                        select count(*) from customer
+                        where username = :username
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource
+                ("username", username);
+
+        Long rows = db.queryForObject(sql, parameterSource, Long.class);
+        return rows == 1L;
+    }
+
+    public void createCustomer(Customer_model customer) {
         String sql =    """
                         insert into customer (email, username, password)
                         values(:email, :username, :password)
-                        returning id
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
@@ -36,71 +45,40 @@ public class CustomerDao {
                 .addValue("username", customer.getUsername())
                 .addValue("password", customer.getPassword());
 
-        try {
-            return db.queryForObject(sql, parameterSource, Long.class);
-        } catch (Exception e) {
-            throw new BadRequestException("Customer with username '%s' already exists".formatted(customer.getUsername()));
-        }
+        db.update(sql, parameterSource);
     }
 
-//ok
-    public void editCustomer(Customer_EditDto customer) {
+
+    public void editCustomer(Customer_model customer) {
         String sql =    """
                         update customer
                         set email = :email,
-                            username = :username,
                             password = :password
-                        where id = :id
+                        where username = :username
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("id", customer.getId())
                 .addValue("email", customer.getEmail())
                 .addValue("username", customer.getUsername())
                 .addValue("password", customer.getPassword());
 
-        int rowsUpdated = db.update(sql, parameterSource);
-        if (rowsUpdated == 0) {
-            throw new BadRequestException("No customer found with ID " + customer.getId());
-        }
-
+        db.update(sql, parameterSource);
     }
 
-//ok
-    public void deleteCustomer(Long customer_id) {
+
+    public void deleteCustomer(String username) {
         String sql =    """
                         delete from customer
-                        where id = :id
+                        where username = :username
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource
-                ("id", customer_id);
+                ("username", username);
 
-        int rowsUpdated = db.update(sql, parameterSource);
-        if (rowsUpdated == 0) {
-            throw new BadRequestException("No customer found with ID " + customer_id);
-        }
+        db.update(sql, parameterSource);
     }
 
-//to be deleted
-    public Optional<Customer_entity> getCustomerById(Long customer_id) {
-        String sql =    """
-                        select * from customer
-                        where id = :id
-                        """;
-
-        SqlParameterSource parameterSource = new MapSqlParameterSource
-                ("id", customer_id);
-
-        try {
-            Customer_entity response = db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
-            return Optional.ofNullable(response);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
-    }
-//ok
-    public Customer_entity getCustomerByUsername(String username) {
+    public Optional<Customer_entity> getCustomerByUsername(String username) {
         String sql =    """
                         select * from customer
                         where username = :username
@@ -109,14 +87,11 @@ public class CustomerDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource
                 ("username", username);
 
-        try {
-            return db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
-        } catch (EmptyResultDataAccessException e) {
-            throw new BadRequestException("Customer with username '%s' doesnt exists".formatted(username));
-        }
+        Customer_entity response = db.queryForObject(sql, parameterSource, new CustomerEntity_RowMapper());
+        return Optional.ofNullable(response);
     }
 
-//ok
+
     public Collection<Customer_entity> getCustomers(Long offset, Long limit, String query) {
 
         String offset_sql = offset.toString().equals(AppConstants.OFFSET_DEFAULT_VALUE)
@@ -141,49 +116,57 @@ public class CustomerDao {
         return db.query(sql, parameterSource, new CustomerEntity_RowMapper());
     }
 
-    public Long addBalance(Long customerId, Long balance) {
+    public Long addBalance(String username, Long balance) {
 
         String sql =    """
                         update customer
                         set balance = customer.balance + :balance
-                        where id = :id
+                        where username = :username
                         returning balance
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("id", customerId)
+                .addValue("username", username)
                 .addValue("balance", balance);
 
         return db.queryForObject(sql, parameterSource, Long.class);
     }
 
-    public Long indexOfCustomerByUsername(String username) {
-        String sql =    """
-                        select id from customer
-                        where username = :username
-                        """;
+//    public Long indexOfCustomerByUsername(String username) {
+//        String sql =    """
+//                        select id from customer
+//                        where username = :username
+//                        """;
+//
+//        SqlParameterSource parameterSource = new MapSqlParameterSource("username", username);
+//
+//        return db.queryForObject(sql, parameterSource, Long.class);
+//    }
 
-        SqlParameterSource parameterSource = new MapSqlParameterSource("username", username);
-
-        return db.queryForObject(sql, parameterSource, Long.class);
-    }
-
-    public void reduceBalance(Long customerId, Long balance) {
+    public void reduceBalance(String username, Long balance) {
         String sql =    """
                         update customer
                         set balance = customer.balance - :balance
-                        where id = :id
+                        where username = :username
                         returning balance
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("id", customerId)
+                .addValue("username", username)
                 .addValue("balance", balance);
 
-        try {
-            db.queryForObject(sql, parameterSource, Long.class);
-        } catch (Exception e) {
-            throw new BadRequestException("You have no money for this sale");
-        }
+        db.queryForObject(sql, parameterSource, Long.class);
+    }
+
+    public Long getBalance(String username) {
+        String sql =    """
+                        select balance from customer
+                        where username = :username
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource
+                ("username", username);
+
+        return db.queryForObject(sql, parameterSource, Long.class);
     }
 }

@@ -21,19 +21,19 @@ public class ReviewDao {
     private final NamedParameterJdbcTemplate db;
 
 
-    public void createReview(Long customer_id, Long book_id, Review_model review) {
+    public void createReview(String username, Long book_id, Review_model review) {
 
         String sql =   """
-                                    insert into review
-                                    (text, mark, customer_id, book_id)
-                                    values
-                                    (:text, :mark, :customer_id, :book_id)
-                                    """;
+                        insert into review
+                        (text, mark, customer_username, book_id)
+                        values
+                        (:text, :mark, :username, :book_id)
+                        """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("text", review.getText())
                 .addValue("mark", review.getMark())
-                .addValue("customer_id", customer_id)
+                .addValue("username", username)
                 .addValue("book_id", book_id);
 
         try {
@@ -48,7 +48,7 @@ public class ReviewDao {
         }
     }
 
-    public void editReview(Long customer_id, Long book_id, Review_model review) {
+    public void editReview(String username, Long book_id, Review_model review) {
 
         if (review.getMark() > 10 || review.getMark() < 0) {
             throw new BadRequestException("Mark not valid");
@@ -59,13 +59,13 @@ public class ReviewDao {
                         set text = :text,
                             mark = :mark,
                             updated = now()
-                        where customer_id = :customer_id and book_id = :book_id
+                        where customer_username = :username and book_id = :book_id
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("text", review.getText())
                 .addValue("mark", review.getMark())
-                .addValue("customer_id", customer_id)
+                .addValue("username", username)
                 .addValue("book_id", book_id);
 
         int rowsUpdated = db.update(sql, parameterSource);
@@ -76,14 +76,14 @@ public class ReviewDao {
     }
 
 
-    public void deleteReview(Long customer_id, Long book_id) {
+    public void deleteReview(String username, Long book_id) {
         String sql =    """
                         delete from review
-                        where customer_id = :customer_id and book_id = :book_id
+                        where customer_username = :username and book_id = :book_id
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("customer_id", customer_id)
+                .addValue("username", username)
                 .addValue("book_id", book_id);
 
         int rowsUpdated = db.update(sql, parameterSource);

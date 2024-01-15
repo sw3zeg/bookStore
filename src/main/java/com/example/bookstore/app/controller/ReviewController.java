@@ -8,6 +8,7 @@ import com.example.bookstore.app.service.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
 import java.util.Collection;
 
@@ -44,13 +45,13 @@ public class ReviewController {
         return reviewService.deleteReview(principal, book_id);
     }
 
-    @DeleteMapping("/admin/books/{book_id}/reviews/{customer_id}")
+    @DeleteMapping("/admin/books/{book_id}/reviews/{username}")
     public ResponseEntity<String> deleteReview_admin(
             @PathVariable Long book_id,
-            @PathVariable Long customer_id
+            @PathVariable String username
 
     ) {
-        return reviewService.deleteReview(customer_id, book_id);
+        return reviewService.deleteReview(username, book_id);
     }
 
     @GetMapping("/books/{book_id}/reviews")

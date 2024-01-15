@@ -3,8 +3,6 @@ package com.example.bookstore.app.rowmapper;
 import com.example.bookstore.app.model.Review.Review_view;
 import org.springframework.jdbc.core.RowMapper;
 
-
-import javax.swing.tree.TreePath;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

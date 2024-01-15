@@ -1,7 +1,6 @@
 package com.example.bookstore.app.service;
 
 
-import com.example.bookstore.app.exception.AppError;
 import com.example.bookstore.app.model.genre.Genre_entity;
 import com.example.bookstore.app.model.genre.Genre_model;
 import com.example.bookstore.app.repository.GenreDao;

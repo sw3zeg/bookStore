@@ -1,9 +1,9 @@
 package com.example.bookstore.app.service;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.time.Duration;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component
@@ -25,10 +28,6 @@ public class JwtTokenService {
 
     public String extractUsername(String token) {
         return extractClaimFromToken(token, Claims::getSubject);
-    }
-
-    public Date extractExpiration(String token) {
-        return extractClaimFromToken(token, Claims::getExpiration);
     }
 
     public <T> T extractClaimFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -50,11 +49,7 @@ public class JwtTokenService {
         return (List<String>) extractClaimFromToken(token, claims -> claims.get("roles"));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    //===========================================================
+    //==========//==========//==========//==========//==========//
 
     //generate token
     public String generateToken(UserDetails userDetails) {

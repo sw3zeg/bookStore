@@ -2,7 +2,7 @@ package com.example.bookstore.app.service;
 
 
 import com.example.bookstore.app.enums.Book_sort;
-import com.example.bookstore.app.exception.*;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.book.Book_SummaryDto;
 import com.example.bookstore.app.model.book.Book_entity;
 import com.example.bookstore.app.model.book.Book_model;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -50,6 +49,10 @@ public class BookService {
 
     public ResponseEntity<Long> createBook(Book_model book) {
 
+        if (!book.isValid()) {
+            throw new BadRequestException("Some field(s) not valid");
+        }
+
         return new ResponseEntity<>(
                 bookRepository.createBook(book),
                 HttpStatus.OK
@@ -57,6 +60,10 @@ public class BookService {
     }
 
     public ResponseEntity<String> editBook(Book_entity book) {
+
+        if (!book.isValid()) {
+            throw new BadRequestException("Some field(s) not valid");
+        }
 
         bookRepository.editBook(book);
         return new ResponseEntity<>(
@@ -87,13 +94,11 @@ public class BookService {
 
         String username = principal.getName();
 
-        Long customer_id = customerService.indexOfCustomerByName(username);
-
         Long price = bookRepository.getPriceOfBook(book_id);
 
-        customerService.reduceBalance(customer_id, price);
+        customerService.reduceBalance(username, price);
 
-        customerBookRepository.addBookToCustomer(customer_id, book_id);
+        customerBookRepository.addBookToCustomer(username, book_id);
 
         return new ResponseEntity<>(
                 String.format("Book with id '%s' was added to library to customer with username '%s'",book_id, username),

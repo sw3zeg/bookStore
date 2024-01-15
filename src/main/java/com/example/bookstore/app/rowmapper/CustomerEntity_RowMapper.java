@@ -10,7 +10,6 @@ public class CustomerEntity_RowMapper implements RowMapper<Customer_entity> {
     @Override
     public Customer_entity mapRow(ResultSet rs, int rowNum) throws SQLException {
         Customer_entity customer = new Customer_entity();
-        customer.setId(rs.getLong("id"));
         customer.setEmail(rs.getString("email"));
         customer.setUsername(rs.getString("username"));
         customer.setPassword(rs.getString("password"));

@@ -2,11 +2,9 @@ package com.example.bookstore.app.service;
 
 
 import com.example.bookstore.app.constants.AppConstants;
-import com.example.bookstore.app.model.CustomerRole.CustomerRole_entity;
-import com.example.bookstore.app.model.customer.Customer_EditDto;
+import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.customer.Customer_entity;
 import com.example.bookstore.app.model.customer.Customer_model;
-import com.example.bookstore.app.model.customer.Customer_view;
 import com.example.bookstore.app.model.role.Role_entity;
 import com.example.bookstore.app.repository.CustomerDao;
 import com.example.bookstore.app.repository.CustomerRoleDao;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,42 +43,55 @@ public class CustomerService implements UserDetailsService {
     }
 
     public Customer_entity findCustomerByUsername(String username) {
-        return customerRepository.getCustomerByUsername(username);
+
+        Optional<Customer_entity> customer = customerRepository.getCustomerByUsername(username);
+
+        if (customer.isEmpty()) {
+            throw new BadRequestException("Customer '%s' doesnt exists".formatted(username));
+        }
+
+        return customer.get();
     }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) {
 
-        Customer_entity customer_entity = findCustomerByUsername(username);
+        Customer_entity customer = findCustomerByUsername(username);
 
-        Collection<Role_entity> roles = roleService.getRolesOfCustomer(customer_entity.getId());
-
-        Customer_view customer = new Customer_view(customer_entity, roles);
+        Collection<Role_entity> roles = roleService.getRolesOfCustomer(username);
 
         return new User(
                 customer.getUsername(),
                 customer.getPassword(),
-                customer.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList())
+                roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList())
         );
     }
 
     @Transactional
     public void createNewUser(Customer_model customer) {
 
+        if (customerRepository.isCustomerExists(customer.getUsername())) {
+            throw new BadRequestException("Customer '%s' already exists".formatted(customer.getUsername()));
+        }
+
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
 
-        Long customer_id = customerRepository.createCustomer(customer);
+        customerRepository.createCustomer(customer);
 
-        customerRoleRepository.addRoleToCustomer(
-                new CustomerRole_entity(customer_id, AppConstants.ROLE_USER));
+        customerRoleRepository.addRoleToCustomer(customer.getUsername(), AppConstants.ROLE_USER);
     }
 
 
 
-    public ResponseEntity<String> editCustomer(Customer_EditDto customer) {
+    public ResponseEntity<String> editCustomer(Customer_model customer) {
+
+        if (customerRepository.isCustomerExists(customer.getUsername())) {
+            throw new BadRequestException("Customer '%s' already exists".formatted(customer.getUsername()));
+        }
 
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+
         customerRepository.editCustomer(customer);
 
         return new ResponseEntity<>(
@@ -88,9 +100,13 @@ public class CustomerService implements UserDetailsService {
         );
     }
 
-    public ResponseEntity<String> deleteCustomer(Long customer_id) {
+    public ResponseEntity<String> deleteCustomer(String username) {
 
-        customerRepository.deleteCustomer(customer_id);
+        if (customerRepository.isCustomerExists(username)) {
+            throw new BadRequestException("Customer '%s' already exists".formatted(username));
+        }
+
+        customerRepository.deleteCustomer(username);
 
         return new ResponseEntity<>(
                 "Customer was deleted successful",
@@ -106,9 +122,13 @@ public class CustomerService implements UserDetailsService {
         );
     }
 
-    public ResponseEntity<String> addBalance(Long customerId, Long balance) {
+    public ResponseEntity<String> addBalance(String username, Long balance) {
 
-        Long newBalance = customerRepository.addBalance(customerId, balance);
+        if (customerRepository.isCustomerExists(username)) {
+            throw new BadRequestException("Customer '%s' already exists".formatted(username));
+        }
+
+        Long newBalance = customerRepository.addBalance(username, balance);
 
         return new ResponseEntity<>(
                 "Money was added. Balance now - %s".formatted(newBalance),
@@ -116,12 +136,13 @@ public class CustomerService implements UserDetailsService {
         );
     }
 
-    public void reduceBalance(Long customerId, Long balance) {
-        customerRepository.reduceBalance(customerId, balance);
-    }
+    public void reduceBalance(String username, Long balance) {
 
-    public Long indexOfCustomerByName(String username) {
-        return customerRepository.indexOfCustomerByUsername(username);
+        if (customerRepository.getBalance(username) < balance) {
+            throw new BadRequestException("You have no money");
+        }
+
+        customerRepository.reduceBalance(username, balance);
     }
 
 }

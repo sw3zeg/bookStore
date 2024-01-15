@@ -2,7 +2,6 @@ package com.example.bookstore.app.repository;
 
 
 import com.example.bookstore.app.constants.AppConstants;
-import com.example.bookstore.app.exception.BadRequestException;
 import com.example.bookstore.app.model.author.Author_entity;
 import com.example.bookstore.app.model.author.Author_model;
 import com.example.bookstore.app.rowmapper.Author_entity_RowMapper;
@@ -13,12 +12,27 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
 public class AuthorDao {
 
     private final NamedParameterJdbcTemplate db;
+
+    public Boolean IsAuthorExists(Long author_id) {
+        String sql =    """
+                        select * from author
+                        where id = :id
+                        """;
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource
+                ("id", author_id);
+
+        int rowsUpdated = db.update(sql, parameterSource);
+
+        return rowsUpdated != 0;
+    }
 
     public Long createAuthor(Author_model authorModel) {
         String sql =    """
@@ -34,11 +48,7 @@ public class AuthorDao {
                 .addValue("biography", authorModel.getBiography())
                 .addValue("photo", authorModel.getPhoto());
 
-        try {
-            return db.queryForObject(sql, parameterSource, Long.class);
-        } catch (Exception e) {
-            throw new BadRequestException("Some field too large");
-        }
+        return db.queryForObject(sql, parameterSource, Long.class);
     }
 
     public void editAuthor(Author_entity authorEntity) {
@@ -56,11 +66,7 @@ public class AuthorDao {
                 .addValue("biography", authorEntity.getBiography())
                 .addValue("photo", authorEntity.getPhoto());
 
-        try {
-            db.update(sql, parameterSource);
-        } catch (Exception e) {
-            throw new BadRequestException("Some field too large");
-        }
+        db.update(sql, parameterSource);
     }
 
     public void deleteAuthor(Long author_id) {
@@ -72,13 +78,10 @@ public class AuthorDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource
                 ("id", author_id);
 
-        int rowsUpdated = db.update(sql, parameterSource);
-        if (rowsUpdated == 0) {
-            throw new BadRequestException("No author found with ID " + author_id);
-        }
+        db.update(sql, parameterSource);
     }
 
-    public Author_entity getAuthorById(Long author_id) {
+    public Optional<Author_entity> getAuthorById(Long author_id) {
         String sql =    """
                         select * from author
                         where id = :id
@@ -87,11 +90,8 @@ public class AuthorDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource
                 ("id", author_id);
 
-        try {
-            return db.queryForObject(sql, parameterSource, new Author_entity_RowMapper());
-        } catch (Exception e) {
-            throw new BadRequestException("No author with id '%s'".formatted(author_id));
-        }
+        Author_entity response = db.queryForObject(sql, parameterSource, new Author_entity_RowMapper());
+        return Optional.ofNullable(response);
     }
 
     public Collection<Author_entity> getAuthors(Long offset, Long limit, String query) {

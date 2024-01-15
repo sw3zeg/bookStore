@@ -19,4 +19,18 @@ public class Book_model {
     private Long author_id;
     private Long genre_id;
     private Long price;
+
+    public boolean isValid() {
+        return  title != null &&
+                description != null &&
+                pages != null &&
+                score_sum != null &&
+                score_count != null &&
+                image != null &&
+                release != null &&
+                author_id != null &&
+                genre_id != null &&
+                price != null;
+
+    }
 }

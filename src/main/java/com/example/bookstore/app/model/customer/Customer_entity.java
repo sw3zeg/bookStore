@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class Customer_entity {
 
-    private Long id;
     private String email;
     private String username;
     private String password;

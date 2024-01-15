@@ -20,23 +20,19 @@ public class CustomerBookDao {
     private final NamedParameterJdbcTemplate db;
 
     //POST
-    public void addBookToCustomer(Long customer_id, Long book_id) {
+    public void addBookToCustomer(String username, Long book_id) {
         String sql =    """
                         insert into customer_book
-                        (customer_id, book_id)
+                        (customer_username, book_id)
                         values
-                        (:customer_id, :book_id)
+                        (:username, :book_id)
                         """;
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("customer_id", customer_id)
+                .addValue("username", username)
                 .addValue("book_id", book_id);
 
-        try {
-            db.update(sql, parameterSource);
-        } catch (Exception e) {
-            throw new BadRequestException("You already have this book");
-        }
+        db.update(sql, parameterSource);
     }
 
     //DELETE

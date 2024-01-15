@@ -36,51 +36,49 @@ create table book(
 );
 
 create table customer(
-    id              bigserial       not null ,
     email           varchar         not null ,
     username        varchar(50)     not null unique ,
     password        varchar         not null ,
     balance         INT             not null default 0,
 
-    CHECK ( balance > 0 ),
-    primary key (id)
+    CHECK ( balance >= 0 ),
+    primary key (username)
 );
 
 create table review(
-    text            varchar                         not null ,
-    created         timestamp without time zone     not null    default now(),
-    updated         timestamp without time zone     not null    default now(),
-    mark            INT                             not null ,
-    customer_id     INT                             not null ,
-    book_id         INT                             not null ,
+    text                varchar                         not null ,
+    created             timestamp without time zone     not null    default now(),
+    updated             timestamp without time zone     not null    default now(),
+    mark                INT                             not null ,
+    customer_username   varchar(50)                     not null ,
+    book_id             INT                             not null ,
 
     check ( mark >= 0 and mark <= 10 ),
-    primary key (customer_id, book_id),
-    foreign key (customer_id) REFERENCES customer(id) ON DELETE CASCADE,
+    primary key (customer_username, book_id),
+    foreign key (customer_username) REFERENCES customer(username) ON DELETE CASCADE,
     foreign key (book_id) REFERENCES book(id) ON DELETE CASCADE
 );
 
 create table customer_book(
-    customer_id     INT     not null ,
-    book_id         INT     not null ,
+    customer_username     varchar(50)     not null ,
+    book_id               INT             not null ,
 
-    primary key (customer_id, book_id),
-    FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE CASCADE,
+    primary key (customer_username, book_id),
+    FOREIGN KEY (customer_username) REFERENCES customer(username) ON DELETE CASCADE,
     FOREIGN KEY (book_id) REFERENCES book(id) ON DELETE CASCADE
 );
 
 create table role(
-    id bigserial ,
     name varchar ,
 
-    primary key (id)
+    primary key (name)
 );
 
 create table customer_role(
-    customer_id     INT     not null ,
-    role_id         INT     not null ,
+    customer_username   varchar(50)     not null ,
+    role_name           varchar         not null ,
 
-    primary key (customer_id, role_id),
-    FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE
+    primary key (customer_username, role_name),
+    FOREIGN KEY (customer_username) REFERENCES customer(username) ON DELETE CASCADE,
+    FOREIGN KEY (role_name) REFERENCES role(name) ON DELETE CASCADE
 );
