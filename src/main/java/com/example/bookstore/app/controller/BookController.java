@@ -9,6 +9,7 @@ import com.example.bookstore.app.model.book.Book_model;
 import com.example.bookstore.app.model.book.Book_view;
 import com.example.bookstore.app.service.BookService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,11 @@ public class BookController {
 
     private final BookService bookService;
 
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return new ResponseEntity<>("Hello World", HttpStatus.OK);
+    }
 
     @GetMapping("/books/{book_id}")
     public ResponseEntity<Book_view> getBookById(@PathVariable Long book_id) {
