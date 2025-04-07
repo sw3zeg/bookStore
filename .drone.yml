@@ -1,18 +1,33 @@
 kind: pipeline
-type: exec
-name: build-and-run
-
-platform:
-  os: linux
-  arch: amd64
+type: docker
+name: CI/CD Pipeline
 
 steps:
-  - name: build-app
-    commands:
-      - echo "Собираем Docker-образ приложения"
-      - docker build -t bookstore-app .
+  - name: Build Docker Image
+    image: plugins/docker
+    settings:
+      dockerfile: Dockerfile
+      context: .
+      repo: your-docker-repo/app
+      tags: latest
+      cache_from: your-docker-repo/app:latest
+    when:
+      event: [push]
 
-  - name: run-with-compose
+  - name: Deploy with Docker Compose
+    image: alpine/bundle-docker-compose
     commands:
-      - echo "Запускаем приложение с PostgreSQL через docker-compose"
+      - docker-compose down
       - docker-compose up -d
+    volumes:
+      - name: docker_sock
+        path: /var/run/docker.sock
+    depends_on:
+      - Build Docker Image
+    when:
+      event: [push]
+
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock
