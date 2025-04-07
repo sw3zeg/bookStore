@@ -11,14 +11,6 @@ steps:
     commands:
       - docker build -t bookstore-app .
 
-  - name: cleanup
-    image: docker/compose:v2.20.3
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - docker compose down -v  # У
-
   - name: run
     image: docker/compose:1.29.2
     volumes:
