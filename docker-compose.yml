@@ -1,11 +1,11 @@
-version: '2.4'
+version: '3.8'
 
 services:
   postgres:
-    image: postgres:17.4
+    image: postgres:latest
     container_name: postgres
     environment:
-      POSTGRES_PASSWORD: 4444
+      - POSTGRES_PASSWORD=4444
     ports:
       - '5432:5432'
     healthcheck:
