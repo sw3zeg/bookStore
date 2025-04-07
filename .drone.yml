@@ -9,7 +9,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker build  --no-cache -t bookstore-app .
+      - docker build  -t bookstore-app .
 
   - name: run
     image: docker/compose:1.29.2
