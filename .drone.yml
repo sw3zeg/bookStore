@@ -1,27 +1,17 @@
 kind: pipeline
-type: docker
+type: exec
 name: default
 
 steps:
   - name: build docker image
-    image: docker:latest
     commands:
       - docker build -t bookstore-app .
-    volumes:
-      - name: docker-sock
-        path: /var/run/docker.sock
 
   - name: docker-compose up
-    image: docker:latest
     commands:
-      - apk add --no-cache docker-compose
       - docker-compose up -d
-    volumes:
-      - name: docker-sock
-        path: /var/run/docker.sock
 
   - name: run load testing metrics plugin
-    image: docker:latest
     commands:
       - mkdir -p /tmp/k6
       - cp script.js /tmp/k6/
@@ -29,12 +19,9 @@ steps:
           -v /tmp/k6:/k6 \
           -v /var/run/docker.sock:/var/run/docker.sock \
           --privileged \
-          -e SUBSCRIBE_TELEGRAM="true" \
-          -e TELEGRAM_TOKEN="${8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8}" \
-          -e TELEGRAM_CHAT_ID="${958007638}" \
-          -e SENDING_FORMAT="TEXT_FORMAT" \
-          -e ONLY_CURRENT_TEST="true" \
+          -e SUBSCRIBE_TELEGRAM=true \
+          -e TELEGRAM_TOKEN=${8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8} \
+          -e TELEGRAM_CHAT_ID=${958007638} \
+          -e SENDING_FORMAT=TEXT_FORMAT \
+          -e ONLY_CURRENT_TEST=true \
           swezeg/loadtestingmetricsplugin:latest
-    volumes:
-      - name: docker-sock
-        path: /var/run/docker.sock
