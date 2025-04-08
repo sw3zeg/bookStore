@@ -3,31 +3,31 @@ type: docker
 name: default
 
 steps:
-  - name: cleanup docker state
-    image: docker
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - docker-compose down -v || true
-      - docker container prune -f || true
-      - docker image prune -f || true
+#  - name: cleanup docker state
+#    image: docker
+#    volumes:
+#      - name: dockersock
+#        path: /var/run/docker.sock
+#    commands:
+#      - docker-compose down -v || true
+#      - docker container prune -f || true
+#      - docker image prune -f || true
 
-  - name: build bookstore app
-    image: docker
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - docker build -t bookstore-app .
+#  - name: build bookstore app
+#    image: docker
+#    volumes:
+#      - name: dockersock
+#        path: /var/run/docker.sock
+#    commands:
+#      - docker build -t bookstore-app .
 
-  - name: run bookstore API
-    image: docker/compose:1.29.2
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - docker-compose up -d --build
+#  - name: run bookstore API
+#    image: docker/compose:1.29.2
+#    volumes:
+#      - name: dockersock
+#        path: /var/run/docker.sock
+#    commands:
+#      - docker-compose up -d --build
 
 #  - name: test
 #    image: docker
@@ -44,10 +44,11 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
+      - cat /drone/src/k6/script.js
       - docker pull swezeg/loadtestingmetricsplugin:latest
-      - docker run --rm -v /drone/src/k6:/k6 -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest < /drone/src/k6/script.js
+      - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --privileged swezeg/loadtestingmetricsplugin:latest < /drone/src/k6/script.js
 
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
+#volumes:
+#  - name: dockersock
+#    host:
+#      path: /var/run/docker.sock
