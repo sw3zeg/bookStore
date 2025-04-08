@@ -2,7 +2,7 @@ kind: pipeline
 type: docker
 name: default
 
-steps:
+#steps:
 #  - name: cleanup docker state
 #    image: docker
 #    volumes:
@@ -37,16 +37,26 @@ steps:
 #    commands:
 #      - docker run --rm -i alpine sh -c "cat - > test.js; cat test.js" < /drone/src/k6/script.js
 
-  - name: run load testing metrics plugin
+
+steps:
+  - name: list root of repo inside container
     image: docker
-    privileged: true
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - cat /drone/src/k6/script.js
-      - docker pull swezeg/loadtestingmetricsplugin:latest
-      - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --privileged swezeg/loadtestingmetricsplugin:latest < /drone/src/k6/script.js
+      - docker run --rm -v /drone/src:/mnt alpine sh -c "ls -la /mnt"
+
+#  - name: run load testing metrics plugin
+#    image: docker
+#    privileged: true
+#    volumes:
+#      - name: dockersock
+#        path: /var/run/docker.sock
+#    commands:
+#      - cat /drone/src/k6/script.js
+#      - docker pull swezeg/loadtestingmetricsplugin:latest
+#      - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --privileged swezeg/loadtestingmetricsplugin:latest < /drone/src/k6/script.js
 
 volumes:
   - name: dockersock
