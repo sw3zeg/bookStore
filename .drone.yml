@@ -35,8 +35,6 @@ steps:
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
-      - name: repo
-        path: /drone/src
     commands:
       - ls -la /drone/src
       - ls -la /drone/src/k6
@@ -47,6 +45,3 @@ volumes:
   - name: dockersock
     host:
       path: /var/run/docker.sock
-  - name: repo
-    host:
-      path: /drone/src
