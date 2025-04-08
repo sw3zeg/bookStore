@@ -35,6 +35,9 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
+      - find /drone/src/k6
+      - ls /drone/src
+      - ls /drone/src/k6
       - docker run --rm -v /drone/src:/mnt docker sh -c "ls -la /mnt; ls -la /mnt/k6"
 
 #  - name: run load testing metrics plugin
