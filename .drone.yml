@@ -3,6 +3,16 @@ type: docker
 name: default
 
 steps:
+  - name: cleanup docker state
+    image: docker
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker-compose down -v || true
+      - docker container prune -f || true
+      - docker image prune -f || true
+
   - name: build bookstore app
     image: docker
     volumes:
