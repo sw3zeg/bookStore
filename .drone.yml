@@ -2,6 +2,9 @@ kind: pipeline
 type: docker
 name: default
 
+workspace:
+  path: /drone/src
+
 steps:
   - name: cleanup docker state
     image: docker
