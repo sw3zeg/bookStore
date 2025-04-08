@@ -38,13 +38,12 @@ steps:
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
-      - /drone/src/k6:/drone/src/k6
     commands:
       - ls -la /drone/src
       - ls -la /drone/src/k6
       - cat /drone/src/k6/script.js
       - docker pull swezeg/loadtestingmetricsplugin:latest
-      - docker run --rm -v /drone/src/k6:/k6 -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest
+      - docker run --rm -v /k6:/k6 -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest
 
 volumes:
   - name: dockersock
