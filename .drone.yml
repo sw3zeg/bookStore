@@ -29,29 +29,29 @@ steps:
     commands:
       - docker-compose up -d --build
 
-  - name: test
-    image: docker
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - docker run --rm -i alpine sh -c "cat -" < /drone/src/k6/script.js
-
-#  - name: run load testing metrics plugin
+#  - name: test
 #    image: docker
-#    privileged: true
 #    volumes:
 #      - name: dockersock
 #        path: /var/run/docker.sock
 #    commands:
-#      - ls -la /drone/src
-#      - ls -la /drone/src/k6
-#      - ls -la
-#      - pwd
-#      - chmod -R a+r /drone/src/k6
-#      - find /drone/src/k6
-#      - docker pull swezeg/loadtestingmetricsplugin:latest
-#      - docker run --rm -v /drone/src/k6:/app/k6 -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest
+#      - docker run --rm -i alpine sh -c "cat -" < /drone/src/k6/script.js
+
+  - name: run load testing metrics plugin
+    image: docker
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - ls -la /drone/src
+      - ls -la /drone/src/k6
+      - ls -la
+      - pwd
+      - chmod -R a+r /drone/src/k6
+      - find /drone/src/k6
+      - docker pull swezeg/loadtestingmetricsplugin:latest
+      - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest < /drone/src/k6/script.js
 
 volumes:
   - name: dockersock
