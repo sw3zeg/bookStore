@@ -11,7 +11,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get('http://192.168.1.77:8080/api/books');
+  const res = http.get('http://192.168.1.77:8081/api/books');
 
   check(res, {
     'status is 200': (r) => r.status === 200,
