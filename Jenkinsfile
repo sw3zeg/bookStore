@@ -5,7 +5,7 @@ pipeline {
         stage('Run k6 test') {
             steps {
                 // Запускаем тест, результат сохраняем в файл
-                docker run --rm -v $(pwd)/k6:/k6 grafana/k6 run k6/script.js --summary-export=summary.json
+                docker run --rm -v /k6:/k6 grafana/k6 run k6/script.js --summary-export=summary.json
             }
         }
 
