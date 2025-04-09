@@ -8,10 +8,15 @@ steps:
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
+      - name: source
+        path: /drone/src
     commands:
-      - docker run --rm -v /home/andrey:/app alpine sh -c "ls -la /app"
-
+      - docker run --rm -v /drone/src/k6:/app alpine sh -c "ls -la /app"
+      
 volumes:
   - name: dockersock
     host:
       path: /var/run/docker.sock
+  - name: source
+    host:
+      path: /drone/src
