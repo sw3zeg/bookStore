@@ -6,6 +6,6 @@ steps:
   - name: create-file
     image: alpine
     commands:
-      - echo "Привет из Drone CI" > info.txt
+      #- echo "Привет из Drone CI" > info.txt
       - ls -la
       - cat info.txt
