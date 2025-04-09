@@ -4,8 +4,12 @@ pipeline {
     stages {
         stage('Run k6 test') {
             steps {
-                // Запускаем тест, результат сохраняем в файл
-                docker run --rm -v ./k6:/k6 grafana/k6 run k6/script.js --summary-export=summary.json
+                sh '''
+                    docker run --rm \
+                    -v $(pwd):/k6 \
+                    -w /k6 \
+                    grafana/k6 run k6/script.js --summary-export=summary.json
+                '''
             }
         }
 
@@ -13,8 +17,7 @@ pipeline {
             steps {
                 script {
                     def summary = readJSON file: 'summary.json'
-                    echo "🧪 Запросов всего: ${summary.metrics.http_reqs.count}"
-                    echo "⏱ Средняя задержка: ${summary.metrics.http_req_duration.avg} мс"
+                    echo "🧪 Запросов: ${summary.metrics.http_reqs.count}"
                     echo "✅ Успешных: ${summary.metrics.checks.passes}"
                     echo "❌ Ошибок: ${summary.metrics.checks.fails}"
                 }
