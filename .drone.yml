@@ -3,7 +3,7 @@ type: docker
 name: simple-pipeline
 
 steps:
-  - name: build
+  - name: build bookStore app
     image: docker
     volumes:
       - name: dockersock
@@ -11,7 +11,7 @@ steps:
     commands:
       - docker build -t bookstore-app .
 
-  - name: run
+  - name: run bookStore API
     image: docker/compose:1.29.2
     volumes:
       - name: dockersock
@@ -19,7 +19,7 @@ steps:
     commands:
       - docker-compose up -d --build
   
-  - name: run-k6
+  - name: run load testing metrics plugin
     image: swezeg/loadtestingmetricsplugin:latest
     privileged: true
     volumes:
