@@ -11,7 +11,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get('http://host.docker.internal:8080/api/books');
+  const res = http.get('http://localhost:8080/api/books');
 
   check(res, {
     'status is 200': (r) => r.status === 200,
