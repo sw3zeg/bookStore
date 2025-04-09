@@ -3,21 +3,21 @@ type: docker
 name: simple-pipeline
 
 steps:
-  - name : build
-    image : docker
-    volumes :
-      - name : dockersock
-        path : / var / run / docker . sock
-    commands :
-      - docker build -t bookstore - app .
+  - name: build
+    image: docker
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker build -t bookstore-app .
 
-  - name : run
-    image : docker / compose :1.29.2
-    volumes :
-      - name : dockersock
-        path : / var / run / docker . sock
-    commands :
-      - docker - compose up -d -- build
+  - name: run
+    image: docker/compose:1.29.2
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker-compose up -d --build
   
   - name: run-k6
     image: swezeg/loadtestingmetricsplugin:latest
