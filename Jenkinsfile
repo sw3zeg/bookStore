@@ -2,9 +2,14 @@ pipeline {
     agent any
 
     stages {
-        stage('Say Hello') {
+        stage('Checkout') {
             steps {
-                echo 'Привет, Jenkins!'
+                git url: 'https://github.com/sw3zeg/bookStore.git'
+            }
+        }
+        stage('Echo') {
+            steps {
+                echo 'Привет!'
             }
         }
     }
