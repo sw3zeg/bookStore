@@ -2,16 +2,29 @@ pipeline {
     agent any
 
     stages {
-        stage('List contents') {
+        stage('Run k6 test') {
             steps {
-                sh '''
-                    echo "📂 Содержимое папки ./k6 на хосте:"
-                    ls -la ./k6
-
-                    echo "📂 Содержимое /k6 внутри контейнера:"
-                    docker run --rm alpine cat - < ./k6/script.js
-                '''
+                // Запускаем тест, результат сохраняем в файл
+                sh 'k6 run test.js --summary-export=summary.json'
             }
+        }
+
+        stage('Show Summary') {
+            steps {
+                script {
+                    def summary = readJSON file: 'summary.json'
+                    echo "🧪 Запросов всего: ${summary.metrics.http_reqs.count}"
+                    echo "⏱ Средняя задержка: ${summary.metrics.http_req_duration.avg} мс"
+                    echo "✅ Успешных: ${summary.metrics.checks.passes}"
+                    echo "❌ Ошибок: ${summary.metrics.checks.fails}"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'summary.json', fingerprint: true
         }
     }
 }
