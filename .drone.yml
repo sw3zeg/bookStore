@@ -3,9 +3,15 @@ type: docker
 name: simple-pipeline
 
 steps:
-  - name: create-file
-    image: alpine
+  - name: run-docker-with-k6
+    image: docker
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
     commands:
-      #- echo "Привет из Drone CI" > info.txt
-      - ls -la
-      - cat info.txt
+      - docker run --rm -v $(pwd)/k6:/app alpine sh -c "ls -la /app"
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
