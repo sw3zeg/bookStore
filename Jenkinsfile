@@ -18,11 +18,9 @@ pipeline {
                     echo "❌ Проваленных чеков: ${summary.metrics.checks.fails}"
                     echo "⏱ Средняя задержка: ${summary.metrics.http_req_duration.avg} мс"
                     echo "📈 95-й процентиль задержки: ${summary.metrics.http_req_duration['p(95)']} мс"
-        
-                    // 🔒 Безопасное извлечение сетевых данных
+
                     def dataReceivedBytes = summary.metrics.data_received?.total ?: 0
                     def dataSentBytes     = summary.metrics.data_sent?.total ?: 0
-        
                     echo "📥 Получено данных: ${String.format('%.2f', dataReceivedBytes / 1024 / 1024)} MB"
                     echo "📤 Отправлено данных: ${String.format('%.2f', dataSentBytes / 1024 / 1024)} MB"
                 }
