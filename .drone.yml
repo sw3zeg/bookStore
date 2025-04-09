@@ -9,7 +9,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker run --rm -v $(pwd)/k6:/app alpine sh -c "ls -la /app"
+      - docker run --rm -v /home/andrey:/app alpine sh -c "ls -la /app"
 
 volumes:
   - name: dockersock
