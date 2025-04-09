@@ -2,11 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Run Docker Container') {
+        stage('Say Hello') {
             steps {
-                script {
-                    sh 'docker run hello-world'
-                }
+                echo 'Привет, Jenkins!'
             }
         }
     }
