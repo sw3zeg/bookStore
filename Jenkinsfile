@@ -9,7 +9,7 @@ pipeline {
                     ls -la ./k6
 
                     echo "📂 Содержимое /k6 внутри контейнера:"
-                    docker run --rm -v $(pwd)/k6:/k6 alpine ls -la /k6
+                    docker run --rm alpine cat - < ./k6/script.js
                 '''
             }
         }
