@@ -14,7 +14,8 @@ steps:
       #- rm -rf /temp
       #- cat /drone/src/k6/script.js | docker run --rm -i alpine sh -c "cat - > script.js; ls -la"
       - docker pull swezeg/loadtestingmetricsplugin:latest
-      - cat /drone/src/k6/script.js | docker run --rm --network=host -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest
+      #- cat /drone/src/k6/script.js | docker run --rm --network=host -v /var/run/docker.sock:/var/run/docker.sock --privileged -e SUBSCRIBE_TELEGRAM="true" -e TELEGRAM_TOKEN="8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8" -e TELEGRAM_CHAT_ID="958007638" -e SENDING_FORMAT="TEXT_FORMAT" -e ONLY_CURRENT_TEST="true" swezeg/loadtestingmetricsplugin:latest
+      - cat /drone/src/k6/script.js | docker run -i --rm swezeg/loadtestingmetricsplugin:latest sh -c "cat -"
       
 volumes:
   - name: dockersock
