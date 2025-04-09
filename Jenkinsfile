@@ -1,14 +1,12 @@
 pipeline {
     agent any
+
     stages {
-        stage('Checkout') {
+        stage('Run Docker Container') {
             steps {
-                git 'https://github.com/sw3zeg/bookStore.git'
-            }
-        }
-        stage('Build') {
-            steps {
-                sh 'ls -la'
+                script {
+                    sh 'docker run hello-world'
+                }
             }
         }
     }
