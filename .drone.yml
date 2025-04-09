@@ -1,20 +1,11 @@
 kind: pipeline
 type: docker
-name: default
-
-workspace:
-  path: /drone/src
+name: simple-pipeline
 
 steps:
-  - name: list root of repo inside container
-    image: docker
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
+  - name: create-file
+    image: alpine
     commands:
-      - docker run --rm -v /drone/src:/mnt alpine sh -c "ls -la /mnt"
-
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
+      - echo "Привет из Drone CI" > info.txt
+      - ls -la
+      - cat info.txt
