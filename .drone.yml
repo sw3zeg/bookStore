@@ -26,11 +26,11 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     environment:
-      - SUBSCRIBE_TELEGRAM=true
-      - TELEGRAM_TOKEN=8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8
-      - TELEGRAM_CHAT_ID=958007638
-      - SENDING_FORMAT=TEXT_FORMAT
-      - ONLY_CURRENT_TEST=true
+      SUBSCRIBE_TELEGRAM: true
+      TELEGRAM_TOKEN: 8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8
+      TELEGRAM_CHAT_ID: 958007638
+      SENDING_FORMAT: TEXT_FORMAT
+      ONLY_CURRENT_TEST: true
    
       
 volumes:
