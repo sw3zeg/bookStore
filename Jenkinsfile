@@ -5,7 +5,7 @@ pipeline {
         stage('Run k6 test') {
             steps {
                 // Запускаем тест, результат сохраняем в файл
-                sh 'k6 run test.js --summary-export=summary.json'
+                sh 'k6 run ./k6/script.js --summary-export=summary.json'
             }
         }
 
