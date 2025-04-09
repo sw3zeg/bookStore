@@ -1,13 +1,10 @@
 pipeline {
     agent any
-
     stages {
-        stage('Print word from Docker') {
+        stage('Run Docker container') {
             steps {
                 script {
-                    docker.image('alpine').inside {
-                        sh 'echo "Привет из контейнера!"'
-                    }
+                    sh 'docker run hello-world'
                 }
             }
         }
