@@ -2,9 +2,12 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+        stage('Run Docker') {
             steps {
-                echo 'Привет, Jenkins!'
+                script {
+                    // Запускаем контейнер, который просто печатает слово
+                    sh 'docker run --rm alpine echo "Привет из Docker!"'
+                }
             }
         }
     }
