@@ -6,9 +6,8 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm \
-                    -v $(pwd)/k6:/scripts \
-                    -w /scripts \
-                    grafana/k6 run script.js --summary-export=summary.json
+                    -v ./k6:/k6 \
+                    grafana/k6 run /k6/script.js
                 '''
             }
         }
