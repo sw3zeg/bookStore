@@ -2,6 +2,20 @@ pipeline {
     agent any
 
     stages {
+
+        stages {
+        stage('Build BookStore App') {
+            steps {
+                sh 'docker build -t bookstore-app .'
+            }
+        }
+
+        stage('Run BookStore API') {
+            steps {
+                sh 'docker-compose up -d --build'
+            }
+        }
+        
         stage('Run k6 test') {
             steps {
                 sh 'k6 run ./k6/script.js --summary-export=summary.json'
