@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     stages {
-
-        stages {
+        
         stage('Build BookStore App') {
             steps {
                 sh 'docker build -t bookstore-app .'
