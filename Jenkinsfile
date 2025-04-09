@@ -14,6 +14,25 @@ pipeline {
                 sh 'docker-compose up -d --build'
             }
         }
+
+        stage('Wait for API to be ready') {
+            steps {
+                script {
+                    sh '''
+                    echo "⏳ Ждём старта API на http://localhost:8080/api/books..."
+                    for i in {1..30}; do
+                      if curl -s http://localhost:8080/api/books > /dev/null; then
+                        echo "✅ API готов!"
+                        exit 0
+                      fi
+                      sleep 1
+                    done
+                    echo "❌ API не ответил за 30 секунд"
+                    exit 1
+                    '''
+                }
+            }
+        }
         
         stage('Run k6 test') {
             steps {
