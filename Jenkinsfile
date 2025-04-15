@@ -61,8 +61,34 @@ pipeline {
     }
 
     post {
-        always {
-            archiveArtifacts artifacts: 'summary.json', fingerprint: true
+    always {
+        script {
+            def summary = readJSON file: 'summary.json'
+            def totalReqs = summary.metrics.http_reqs.count
+            def successChecks = summary.metrics.checks.passes
+            def failedChecks = summary.metrics.checks.fails
+            def avgLatency = summary.metrics.http_req_duration.avg
+            def latency95 = summary.metrics.http_req_duration['p(95)']
+            
+            def msg = """
+📊 *Результаты k6-тестирования*:
+🧪 Запросов: *${totalReqs}*
+✅ Успешных чеков: *${successChecks}*
+❌ Проваленных чеков: *${failedChecks}*
+⏱ Средняя задержка: *${avgLatency} мс*
+📈 95-й процентиль: *${latency95} мс*
+"""
+
+            def BOT_TOKEN = '123456789:ABCDEF...' // замени на токен
+            def CHAT_ID = '12345678' // замени на chat_id
+
+            sh """
+            curl -s -X POST "https://api.telegram.org/bot${8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8}/sendMessage" \\
+              -d chat_id=${958007638} \\
+              -d parse_mode=Markdown \\
+              -d text="\$(echo '${msg}' | sed 's/"/\\"/g')"
+            """
         }
     }
+}
 }
