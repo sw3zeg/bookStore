@@ -92,7 +92,7 @@ pipeline {
     }
 }
 
-    post {
+    post1 {
         always {
             archiveArtifacts artifacts: 'summary.json', fingerprint: true
         }
