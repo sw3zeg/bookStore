@@ -79,12 +79,12 @@ pipeline {
 📈 95-й процентиль: *${latency95} мс*
 """
 
-            def BOT_TOKEN = '123456789:ABCDEF...' // замени на токен
-            def CHAT_ID = '12345678' // замени на chat_id
+            def BOT_TOKEN = '8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8'
+            def CHAT_ID = '958007638'
 
             sh """
-            curl -s -X POST "https://api.telegram.org/bot${8060387975:AAGTxAHHqHZo7LKpD4z7aLKx7LEZSngh8k8}/sendMessage" \\
-              -d chat_id=${958007638} \\
+            curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \\
+              -d chat_id=${CHAT_ID} \\
               -d parse_mode=Markdown \\
               -d text="\$(echo '${msg}' | sed 's/"/\\"/g')"
             """
