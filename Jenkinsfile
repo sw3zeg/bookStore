@@ -89,12 +89,8 @@ pipeline {
               -d text="\$(echo '${msg}' | sed 's/"/\\"/g')"
             """
         }
+
+        archiveArtifacts artifacts: 'summary.json', fingerprint: true
     }
 }
-
-    post1 {
-        always {
-            archiveArtifacts artifacts: 'summary.json', fingerprint: true
-        }
-    }
 }
