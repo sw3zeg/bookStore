@@ -37,7 +37,7 @@ pipeline {
         stage('Run k6 Test') {
             steps {
                 sh '''
-                docker run --rm -i -v $PWD:/scripts -w /scripts grafana/k6 run script.js --summary-export=summary.json
+                    docker run --rm -i -v $PWD:/scripts -w /scripts grafana/k6 run k6/script.js --summary-export=summary.json
                 '''
             }
         }
