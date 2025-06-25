@@ -20,7 +20,7 @@ steps:
       - docker-compose up -d --build
   
   - name: run load testing metrics plugin
-    image: swezeg/loadtestingmetricsplugin:latest
+    image: swezeg/loadtestingmetricsplugin:2.0
     privileged: true
     volumes:
       - name: dockersock
