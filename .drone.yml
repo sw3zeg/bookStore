@@ -31,7 +31,19 @@ steps:
       TELEGRAM_CHAT_ID: 958007638
       SENDING_FORMAT: TEXT_FORMAT
       ONLY_CURRENT_TEST: true
-   
+
+  - name: profile loadtesting plugin
+    image: your/async-profiler-image:latest
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - CONTAINER=$(docker ps -q --filter ancestor=swezeg/loadtestingmetricsplugin:2.0)
+      - PID=$(docker exec $CONTAINER pidof java)
+      - docker exec --privileged $CONTAINER \
+          /opt/async-profiler/profiler.sh -e cpu -d 30 -f /tmp/profile.html $PID
+      - docker cp $CONTAINER:/tmp/profile.html .
       
 volumes:
   - name: dockersock
